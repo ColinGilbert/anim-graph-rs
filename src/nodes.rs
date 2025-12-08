@@ -31,6 +31,7 @@ pub struct BlendNode {
     pub looping: Vec<bool>,
     pub seek: Vec<f32>,
     pub speed: Vec<f32>,
+    pub finished: Vec<bool>,
     pub syncing: bool,
 }
 
@@ -66,13 +67,14 @@ impl BlendNode {
         let looping = vec![false; samplers.len()];
         let seek = vec![0.0; samplers.len()];
         let speed = vec![0.0; samplers.len()];
-
+        let finished = vec![false; samplers.len()];
         Self {
             blend_job,
             samplers,
             looping,
             seek,
             speed,
+            finished,
             syncing: false,
         }
     }
@@ -93,6 +95,7 @@ impl BlendNode {
                 sampler.set_ratio(ratio);
                 sampler.run().unwrap();
             } else {
+
             }
         }
         self.blend_job.run().unwrap();
