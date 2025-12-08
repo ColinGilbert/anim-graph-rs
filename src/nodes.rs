@@ -31,7 +31,8 @@ pub struct BlendNode {
     pub looping: Vec<bool>,
     pub seek: Vec<f32>,
     pub speed: Vec<f32>,
-    pub finished: Vec<bool>,
+    pub finished_anims: Vec<bool>,
+    pub finished_blend: bool,
     pub syncing: bool,
 }
 
@@ -66,15 +67,18 @@ impl BlendNode {
 
         let looping = vec![false; samplers.len()];
         let seek = vec![0.0; samplers.len()];
-        let speed = vec![0.0; samplers.len()];
-        let finished = vec![false; samplers.len()];
+        let speed = vec![1.0; samplers.len()];
+        let finished_anims = vec![false; samplers.len()];
+        let finished_blend = false;
+
         Self {
             blend_job,
             samplers,
             looping,
             seek,
             speed,
-            finished,
+            finished_anims,
+            finished_blend,
             syncing: false,
         }
     }
@@ -89,16 +93,50 @@ impl BlendNode {
                 } else {
                     if !(self.seek[i] < duration) {
                         self.seek[i] = duration;
+                        self.finished_anims[i] = true;
                     }
                 }
                 let ratio = self.seek[i] / duration;
                 sampler.set_ratio(ratio);
                 sampler.run().unwrap();
             } else {
-
             }
         }
+
+        let mut finished = true;
+
+        for f in self.finished_anims.clone() {
+            if !f {
+                finished = false;
+                break;
+            }
+        }
+
+        self.finished_blend = finished;
+
         self.blend_job.run().unwrap();
+    }
+
+    pub fn reset(&mut self) {
+        let mut i = 0;
+        while i < self.seek.len() {
+            self.seek[i] = 0.0;
+            i += 1;
+        }
+
+        i = 0;
+        while i < self.speed.len() {
+            self.speed[i] = 1.0;
+            i += 1;
+        }
+
+        i = 0;
+        while i < self.finished_anims.len() {
+            self.finished_anims[i] = false;
+            i += 1;
+        }
+
+        self.finished_blend = false;
     }
 
     // Returns the layer index. This is used for graph-based inputs
@@ -128,9 +166,7 @@ pub struct ConditionNode {
 
 impl ConditionNode {
     pub fn new(index: usize) -> Self {
-        Self {
-            index
-        }
+        Self { index }
     }
 }
 
@@ -215,6 +251,7 @@ pub struct SampleNode {
     pub seek: f32,
     pub speed: f32,
     pub looping: bool,
+    pub finished: bool,
 }
 
 // This node samples an animation. This is the simplest node and should be used whenever a single animation will be used, as it is the fastest.
@@ -236,24 +273,32 @@ impl SampleNode {
         Self {
             sample_job,
             seek: 0.0,
-            looping: false,
             speed: 1.0,
+            looping: false,
+            finished: false,
         }
     }
 
     pub fn update(&mut self, dt: web_time::Duration) {
         let duration = self.sample_job.animation().unwrap().duration();
         self.seek += dt.as_secs_f32() * self.speed;
-        if self.looping {
+        if self.looping && !self.finished {
             self.seek %= duration;
         } else {
             if !(self.seek < duration) {
                 self.seek = 0.0;
+                self.finished = true;
             }
         }
         let ratio = self.seek / duration;
         self.sample_job.set_ratio(ratio);
         self.sample_job.run().unwrap();
+    }
+
+    pub fn reset(&mut self) {
+        self.finished = false;
+        self.seek = 0.0;
+        self.speed = 1.0;
     }
 }
 
