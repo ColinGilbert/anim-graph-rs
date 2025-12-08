@@ -5,8 +5,6 @@ use mapgraph::{
 use ozz_animation_rs::*;
 use std::sync::*;
 
-use crate::edges::*;
-
 pub enum AnimNode {
     Blend(BlendNode),
     Condition(ConditionNode),
@@ -34,6 +32,8 @@ pub struct BlendNode {
     pub finished_anims: Vec<bool>,
     pub finished_blend: bool,
     pub syncing: bool,
+    pub longest_anim: usize, // Used when syncing
+    pub external_inputs: Vec<usize>,
 }
 
 impl BlendNode {
@@ -41,8 +41,14 @@ impl BlendNode {
         let mut samplers = Vec::<SamplingJobArc>::new();
         let mut blend_job = BlendingJobArc::default();
         blend_job.set_skeleton(skeleton.clone());
+        let mut longest_anim = 0;
+        let mut longest_anim_len = 0.0;
+        for (i, a) in animations.iter().enumerate() {
+            if a.duration() > longest_anim_len {
+                longest_anim_len = a.duration();
+                longest_anim = i;
+            }
 
-        for a in animations {
             let mut sample_job = SamplingJobArc::default();
 
             sample_job.set_animation(a.clone());
@@ -61,8 +67,10 @@ impl BlendNode {
             blend_job
                 .layers_mut()
                 .push(BlendingLayer::new(sample_out.clone()));
-            let i = blend_job.layers().len() - 1;
-            blend_job.layers_mut()[i].weight = 1.0;
+
+            let layers_idx = blend_job.layers().len() - 1;
+
+            blend_job.layers_mut()[layers_idx].weight = 1.0;
         }
 
         let looping = vec![false; samplers.len()];
@@ -70,6 +78,7 @@ impl BlendNode {
         let speed = vec![1.0; samplers.len()];
         let finished_anims = vec![false; samplers.len()];
         let finished_blend = false;
+        let external_inputs = Vec::<usize>::new();
 
         Self {
             blend_job,
@@ -80,12 +89,15 @@ impl BlendNode {
             finished_anims,
             finished_blend,
             syncing: false,
+            longest_anim,
+            external_inputs,
         }
     }
 
     pub fn update(&mut self, dt: web_time::Duration) {
-        for (i, sampler) in self.samplers.iter_mut().enumerate() {
-            if !self.syncing {
+        if !self.syncing && !self.finished_blend {
+            // Not syncing between anims, blend job hasn't finished yet
+            for (i, sampler) in self.samplers.iter_mut().enumerate() {
                 let duration = sampler.animation().unwrap().duration();
                 self.seek[i] += dt.as_secs_f32() * self.speed[i];
                 if self.looping[i] {
@@ -99,9 +111,27 @@ impl BlendNode {
                 let ratio = self.seek[i] / duration;
                 sampler.set_ratio(ratio);
                 sampler.run().unwrap();
-            } else {
             }
-        }
+        } else if !self.finished_blend { // Syncing between anims, blend job hasn't finished yet
+        let longest_duration = self.samplers[self.longest_anim].animation().unwrap().duration();
+            for (i, sampler) in self.samplers.iter_mut().enumerate() {
+                let anim_duration = sampler.animation().unwrap().duration();
+                let anim_duration_to_longest_ratio =  anim_duration / longest_duration;
+                self.seek[i] += dt.as_secs_f32() * anim_duration_to_longest_ratio * self.speed[i];
+                if self.looping[i] {
+                    self.seek[i] %= anim_duration;
+                } else {
+                    if !(self.seek[i] < anim_duration) {
+                        self.seek[i] = anim_duration;
+                        self.finished_anims[i] = true;
+                    }
+                }
+                let ratio = self.seek[i] / (anim_duration * anim_duration_to_longest_ratio);
+                sampler.set_ratio(ratio);
+                sampler.run().unwrap();
+            }
+        } else {
+        } // Nothing to do.
 
         let mut finished = true;
 
@@ -139,7 +169,8 @@ impl BlendNode {
         self.finished_blend = false;
     }
 
-    // Returns the layer index. This is used for graph-based inputs
+    // Returns the input's index. This is useful for graph-based inputs
+    // It is used to index into the blend job layers, and the following vectors: looping, seek, speed, and finished_anims
     pub fn set_input(&mut self, input: Arc<RwLock<Vec<SoaTransform>>>) -> usize {
         self.blend_job
             .layers_mut()
@@ -147,8 +178,14 @@ impl BlendNode {
         let i = self.blend_job.layers().len() - 1;
         self.blend_job.layers_mut()[i].weight = 1.0;
 
+        self.looping.push(false);
+        self.seek.push(0.0);
+        self.finished_anims.push(false);
+        self.speed.push(1.0);
+
         i
     }
+
     // Convenience methods
     pub fn set_output(&mut self, output: Arc<RwLock<Vec<SoaTransform>>>) {
         self.blend_job.set_output(output.clone());
@@ -159,7 +196,8 @@ impl BlendNode {
     }
 }
 
-// This is used by the graph evaluator whether or not to evaluate the next node
+// This is used by the graph evaluator whether or not to evaluate the next node.
+// The index refers to the bool params vector...
 pub struct ConditionNode {
     pub index: usize,
 }
@@ -304,7 +342,8 @@ impl SampleNode {
 
 // This is the most complex node type because it manages the current state, does callbacks, and assigns weights to blending jobs.
 pub struct StateMachineNode {
-    pub graph: SlotMapGraph<AnimNode, AnimEdge>,
+    pub nodes: Vec<usize>,
+    pub edges: Vec<usize>,
     pub start: Option<NodeIndex>,
     pub end: Option<NodeIndex>,
     pub active_node: Option<NodeIndex>,
@@ -315,7 +354,8 @@ pub struct StateMachineNode {
 impl StateMachineNode {
     pub fn new() -> Self {
         Self {
-            graph: SlotMapGraph::<AnimNode, AnimEdge>::default(),
+            nodes: Vec::new(),
+            edges: Vec::new(),
             start: None,
             end: None,
             active_node: None,

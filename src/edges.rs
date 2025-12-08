@@ -10,6 +10,5 @@ pub enum SimpleEdge {}
 // This is used mostly to pipe between playbacks and blend jobs.
 // Can also be used to pass blend job output to another blend job, or even a state machine's output to a blend job
 pub struct OutputEdge {
-    pub weight: f32,
     pub layer: usize, // used by the graph evaluator on the next node's blend job 
 }
