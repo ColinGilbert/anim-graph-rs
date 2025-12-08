@@ -340,19 +340,21 @@ impl SampleNode {
 pub struct StateMachineNode {
     pub nodes: Vec<usize>,
     pub edges: Vec<usize>,
-    pub start: Option<usize>,
-    pub end: Option<usize>,
-    pub active_node: Option<usize>,
+    pub start: usize,
+    pub end: usize,
+    pub active_node: usize,
 }
 
 impl StateMachineNode {
-    pub fn new() -> Self {
+    pub fn new(node_idx: usize) -> Self {
+        let mut nodes = Vec::new();
+        nodes.push(node_idx);
         Self {
-            nodes: Vec::new(),
+            nodes,
             edges: Vec::new(),
-            start: None,
-            end: None,
-            active_node: None,
+            start: 0,
+            end: 0,
+            active_node: 0,
         }
     }
 }
