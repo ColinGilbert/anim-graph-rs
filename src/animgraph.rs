@@ -10,6 +10,8 @@ use ozz_animation_rs::*;
 use crate::edges::*;
 use crate::nodes::*;
 
+// This is the root structure for our animation graph.
+// 
 pub struct AnimGraph {
     pub skeleton: Arc<Skeleton>, // We keep this here as many of the nodes require a skeleton
     pub graph: SlotMapGraph<AnimNode, AnimEdge>,
@@ -22,7 +24,7 @@ pub struct AnimGraph {
     pub params_float: Vec<f32>,
     pub params_uint: Vec<usize>,
     pub params_int: Vec<i64>,
-    pub params_vec3: Vec<[f32; 3]>,
+    pub params_vec3: Vec<glam::Vec3>,
 }
 
 impl AnimGraph {
@@ -43,4 +45,3 @@ impl AnimGraph {
         }
     }
 }
-
