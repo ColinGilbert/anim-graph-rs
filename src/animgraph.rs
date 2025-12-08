@@ -5,15 +5,14 @@ use ozz_animation_rs::*;
 use crate::edges::*;
 use crate::nodes::*;
 
-// This is the root structure for our animation graph.
-// 
+// This is the structure for our animation graph.
 pub struct AnimGraph {
-    pub skeleton: Arc<Skeleton>, // We keep this here as many of the nodes require a skeleton
+    pub skeleton: Arc<Skeleton>, // We keep this here, as many of the nodes require a skeleton
     pub nodes: Vec<AnimNode>,
     pub edges: Vec<AnimEdge>,
-    pub begin_node: Option<usize>,
-    pub output_node: Option<usize>,
-    pub current_node: Option<usize>,
+    pub start_node: usize,
+    pub output_node: usize,
+    pub current_node: usize,
     pub params_bool: Vec<bool>,
     pub params_float: Vec<f32>,
     pub params_uint: Vec<usize>,
@@ -22,14 +21,16 @@ pub struct AnimGraph {
 }
 
 impl AnimGraph {
-    pub fn new(skeleton: Arc<Skeleton>) -> Self {
+    pub fn new(skeleton: Arc<Skeleton>, node: AnimNode) -> Self {
+        let mut nodes = Vec::new();
+        nodes.push(node);
         Self {
             skeleton: skeleton.clone(),
-            nodes: Vec::new(),
+            nodes,
             edges: Vec::new(),
-            begin_node: None,
-            output_node: None,
-            current_node: None,
+            start_node: 0,
+            output_node: 0,
+            current_node: 0,
             params_bool: Vec::new(),
             params_float: Vec::new(),
             params_uint: Vec::new(),
