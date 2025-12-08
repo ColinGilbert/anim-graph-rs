@@ -1,7 +1,3 @@
-use mapgraph::{
-    aliases::SlotMapGraph,
-    map::slotmap::{EdgeIndex, NodeIndex},
-};
 use ozz_animation_rs::*;
 use std::sync::*;
 
@@ -344,11 +340,9 @@ impl SampleNode {
 pub struct StateMachineNode {
     pub nodes: Vec<usize>,
     pub edges: Vec<usize>,
-    pub start: Option<NodeIndex>,
-    pub end: Option<NodeIndex>,
-    pub active_node: Option<NodeIndex>,
-    pub active_edge: Option<EdgeIndex>,
-    pub on_node: bool,
+    pub start: Option<usize>,
+    pub end: Option<usize>,
+    pub active_node: Option<usize>,
 }
 
 impl StateMachineNode {
@@ -359,8 +353,6 @@ impl StateMachineNode {
             start: None,
             end: None,
             active_node: None,
-            active_edge: None,
-            on_node: true,
         }
     }
 }
