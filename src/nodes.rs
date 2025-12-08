@@ -112,19 +112,21 @@ impl BlendNode {
             }
         } else if !self.finished_blend {
             // Syncing between anims, blend job hasn't finished yet
-            let longest_duration = self.samplers[self.longest_anim]
-                .animation()
-                .unwrap()
-                .duration();
+            // let longest_duration = self.samplers[self.longest_anim]
+            //     .animation()
+            //     .unwrap()
+            //     .duration();
             let driver_duration = self.samplers[self.sync_driver]
                 .animation()
                 .unwrap()
                 .duration();
             for (i, sampler) in self.samplers.iter_mut().enumerate() {
                 let anim_duration = sampler.animation().unwrap().duration();
-                let anim_duration_to_longest_ratio = anim_duration / longest_duration;
-                let anim_duration_to_driver_ratio = anim_duration / driver_duration;
-                self.seek[i] += dt.as_secs_f32() * anim_duration_to_longest_ratio * self.speed[i] * anim_duration_to_driver_ratio;
+                //let longest_ratio = anim_duration / longest_duration;
+                let driver_ratio = anim_duration / driver_duration;
+
+                self.seek[i] += dt.as_secs_f32() * self.speed[i] * driver_ratio;
+                
                 if self.looping[i] {
                     self.seek[i] %= anim_duration;
                 } else {
@@ -133,7 +135,9 @@ impl BlendNode {
                         self.finished_anims[i] = true;
                     }
                 }
-                let ratio = self.seek[i] / (anim_duration * anim_duration_to_longest_ratio);
+                
+                let ratio = self.seek[i] / (anim_duration * driver_ratio);
+                
                 sampler.set_ratio(ratio);
                 sampler.run().unwrap();
             }
