@@ -390,7 +390,7 @@ impl TransitionNode {
         Self {
             blend: BlendNode::new(skeleton, Vec::new()),
             weight1: 1.0,
-            weight2: 1.0,
+            weight2: 0.0,
             duration: 0.2,
             elapsed: 0.0,
         }
