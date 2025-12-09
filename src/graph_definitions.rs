@@ -10,8 +10,8 @@ use mapgraph::{
 
 pub struct AnimGraphDefinition {
     pub graph: SlotMapGraph<AnimNodeDefinition, AnimEdgeDefinition>,
-    pub begin: Option<NodeIndex>,
-    pub output: Option<NodeIndex>,
+    pub begin: NodeIndex,
+    pub output: NodeIndex,
     pub params_bool: Vec<bool>,
     pub params_float: Vec<f32>,
     pub params_uint: Vec<usize>,
@@ -20,11 +20,13 @@ pub struct AnimGraphDefinition {
 }
 
 impl AnimGraphDefinition {
-    pub fn new() -> Self {
+    pub fn new(node: AnimNodeDefinition) -> Self {
+        let mut graph = SlotMapGraph::<AnimNodeDefinition, AnimEdgeDefinition>::default();
+        let node_idx = graph.add_node(node);
         Self {
-            graph: SlotMapGraph::<AnimNodeDefinition, AnimEdgeDefinition>::default(),
-            begin: None,
-            output: None,
+            graph,
+            begin: node_idx,
+            output: node_idx,
             params_bool: Vec::new(),
             params_float: Vec::new(),
             params_uint: Vec::new(),
