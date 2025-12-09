@@ -123,7 +123,7 @@ impl BlendNode {
             for (i, sampler) in self.samplers.iter_mut().enumerate() {
                 let anim_duration = sampler.animation().unwrap().duration();
                 //let longest_ratio = anim_duration / longest_duration;
-                let driver_ratio = anim_duration / driver_duration;
+                let driver_ratio = driver_duration / anim_duration;
 
                 self.seek[i] += dt.as_secs_f32() * self.speed[i] * driver_ratio;
                 
