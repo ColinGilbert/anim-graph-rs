@@ -136,7 +136,7 @@ impl BlendNode {
                     }
                 }
                 
-                let ratio = self.seek[i] / (anim_duration * driver_ratio);
+                let ratio = self.seek[i] / anim_duration;
                 
                 sampler.set_ratio(ratio);
                 sampler.run().unwrap();
