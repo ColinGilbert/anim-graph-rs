@@ -4,12 +4,8 @@ use std::{rc::Rc};
 use crate::nodes::BlendNode;
 
 pub enum AnimEdge {
-    Simple(SimpleEdge),
+    Simple,
     Blend(BlendEdge),
-}
-
-// This is used to connect between nodes that don't need any special processing
-pub struct SimpleEdge {
 }
 
 // This is used mostly to pipe between playbacks to blend jobs

@@ -8,7 +8,7 @@ use crate::nodes::*;
 
 use mapgraph::{
     aliases::SlotMapGraph,
-    map::slotmap::{NodeIndex, EdgeIndex},
+    map::slotmap::{EdgeIndex, NodeIndex},
 };
 
 // This is the structure for our animation graph.
@@ -20,17 +20,17 @@ pub struct AnimGraph {
     pub current_transition: Option<EdgeIndex>,
     pub output: LocalToModelNode,
     // The following are the parameters this graph stores.
-    pub bools: Vec<bool>,
-    pub floats: Vec<f32>,
-    pub uints: Vec<usize>,
-    pub ints: Vec<i64>,
-    pub vec3s: Vec<glam::Vec3>,
+    bools: Vec<bool>,
+    floats: Vec<f32>,
+    uints: Vec<usize>,
+    ints: Vec<i64>,
+    vec3s: Vec<glam::Vec3>,
     // The following are for the client programmer to build a map of enums to parameters indices.
-    pub bool_names: HashMap<String, usize>,
-    pub float_names: HashMap<String, usize>,
-    pub uint_names: HashMap<String, usize>,
-    pub int_names: HashMap<String, usize>,
-    pub vec_names: HashMap<String, usize>
+    bool_names: HashMap<String, usize>,
+    float_names: HashMap<String, usize>,
+    uint_names: HashMap<String, usize>,
+    int_names: HashMap<String, usize>,
+    vec3_names: HashMap<String, usize>,
 }
 
 impl AnimGraph {
@@ -53,7 +53,69 @@ impl AnimGraph {
             float_names: HashMap::new(),
             uint_names: HashMap::new(),
             int_names: HashMap::new(),
-            vec_names: HashMap::new(),
+            vec3_names: HashMap::new(),
         }
     }
+
+    pub fn create_bool_param(&mut self, value: bool, param: String) -> usize {
+        self.bools.push(value);
+        let result = self.bools.len() - 1;
+        self.bool_names.insert(param, result);
+
+        result
+    }
+
+    pub fn create_float_param(&mut self, value: f32, param: String) -> usize {
+        self.floats.push(value);
+        let result = self.floats.len() - 1;
+        self.float_names.insert(param, result);
+
+        result
+    }
+
+    pub fn create_uint_param(&mut self, value: usize, param: String) -> usize {
+        self.uints.push(value);
+        let result = self.uints.len() - 1;
+        self.uint_names.insert(param, result);
+
+        result
+    }
+
+    pub fn create_int_param(&mut self, value: i64, param: String) -> usize {
+        self.ints.push(value);
+        let result = self.ints.len() - 1;
+        self.int_names.insert(param, result);
+
+        result
+    }
+    
+    pub fn create_vec3_param(&mut self, value: glam::Vec3, param: String) -> usize {
+        self.vec3s.push(value);
+        let result = self.vec3s.len() - 1;
+        self.vec3_names.insert(param, result);
+
+        result
+    }
+
+    pub fn set_bool(&mut self, value: bool, idx: usize) {
+        self.bools[idx] = value;
+    }
+
+    pub fn set_float(&mut self, value: f32, idx: usize) {
+        self.floats[idx] = value;
+    }
+
+    pub fn set_uint(&mut self, value: usize, idx: usize) {
+        self.uints[idx] = value;
+    }
+
+    pub fn set_int(&mut self, value: i64, idx: usize) {
+        self.ints[idx] = value;
+    }
+    
+    pub fn set_vec3(&mut self, value: glam::Vec3, idx: usize) {
+        self.vec3s[idx] = value;
+    }
+
+
 }

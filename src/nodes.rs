@@ -232,6 +232,14 @@ pub struct EndNode {
     pub output: Rc<RefCell<Vec<SoaTransform>>>,
 }
 
+impl EndNode {
+    fn new(skeleton: Rc<Skeleton>) -> Self {
+        let output = Rc::new(RefCell::new(vec![SoaTransform::default(); skeleton.num_joints()]));
+        Self {
+            output,
+        }
+    }
+}
 // This node turns local-space bone matrices into model-space matrices.
 // It is usually the output node of an animgraph
 pub struct LocalToModelNode {
@@ -380,14 +388,16 @@ pub struct StateMachineNode {
 }
 
 impl StateMachineNode {
-    pub fn new(node: AnimNode) -> Self {
+    pub fn new(skeleton: Rc<Skeleton>) -> Self {
         let mut graph = SlotMapGraph::<AnimNode, AnimEdge>::default();
-        let node_idx = graph.add_node(node);
+        let start_idx = graph.add_node(AnimNode::Start);
+        let end_idx = graph.add_node(AnimNode::End(EndNode::new(skeleton)));
+        let _ = graph.add_edge(AnimEdge::Simple, start_idx, end_idx);
         Self {
             graph: SlotMapGraph::<AnimNode, AnimEdge>::default(),
-            start: node_idx,
-            end: node_idx,
-            active_node: node_idx,
+            start: start_idx,
+            end: end_idx,
+            active_node: start_idx,
         }
     }
 }
