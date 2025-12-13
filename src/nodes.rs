@@ -1,58 +1,57 @@
+use mapgraph::aliases::SlotMapGraph;
+use mapgraph::map::slotmap::NodeIndex;
 use ozz_animation_rs::*;
-use std::sync::*;
+use std::cell::RefCell;
+use std::rc::*;
+
+use crate::edges::AnimEdge;
 
 pub enum AnimNode {
     Blend(BlendNode),
     Condition(ConditionNode),
+    End(EndNode),
     LocalToModel(LocalToModelNode),
     ParamBool(ParamBoolNode),
     ParamFloat(ParamFloatNode),
     ParamInt(ParamIntNode),
     ParamUint(ParamUintNode),
     ParamVec3(ParamVec3Node),
-    Sample(SampleNode),
-    StateMachine(StateMachineNode),
-    Transition(TransitionNode),
+    Sampler(SamplerNode),
+    Start,
+   // StateMachine(StateMachineNode),
+   // Transition(TransitionNode),
 }
 
 // This node blends multiple animations together.
-// Its inputs can be playback nodes, state machine nodes, or other blend nodes.
+// Inputs can be its embedded animations, sampler nodes, state machine nodes, or other blend nodes.
 // Note: In order to sync animations, they must be added to the node explicitly as part of its parameters.
-// This is because trying to figure out what the graph should do when this information is spread out across edges and other nodes is a PITA and I'm time-constrained...
+// This is because a sampler node that gets independently evaluated can't be synced with this node.
 pub struct BlendNode {
-    pub blend_job: BlendingJobArc,
-    pub samplers: Vec<SamplingJobArc>,
+    pub blend_job: BlendingJobRc,
+    pub samplers: Vec<SamplingJobRc>,
     pub looping: Vec<bool>,
     pub seek: Vec<f32>,
     pub speed: Vec<f32>,
     pub finished_anims: Vec<bool>,
     pub finished_blend: bool,
     pub syncing: bool,
-    pub longest_anim: usize, // Used when syncing
     pub sync_driver: usize,
-    pub external_inputs: Vec<usize>,
 }
 
 impl BlendNode {
-    pub fn new(skeleton: Arc<Skeleton>, animations: Vec<Arc<Animation>>) -> Self {
-        let mut samplers = Vec::<SamplingJobArc>::new();
-        let mut blend_job = BlendingJobArc::default();
+    pub fn new(skeleton: Rc<Skeleton>, animations: Vec<Rc<Animation>>) -> Self {
+        let mut samplers = Vec::<SamplingJobRc>::new();
+        let mut blend_job = BlendingJobRc::default();
         blend_job.set_skeleton(skeleton.clone());
-        let mut longest_anim = 0;
-        let mut longest_anim_len = 0.0;
-        for (i, a) in animations.iter().enumerate() {
-            if a.duration() > longest_anim_len {
-                longest_anim_len = a.duration();
-                longest_anim = i;
-            }
 
-            let mut sample_job = SamplingJobArc::default();
+        for a in animations {
+            let mut sample_job = SamplingJobRc::default();
 
             sample_job.set_animation(a.clone());
 
             sample_job.set_context(SamplingContext::new(a.num_tracks()));
 
-            let sample_out = Arc::new(RwLock::new(vec![
+            let sample_out = Rc::new(RefCell::new(vec![
                 SoaTransform::default();
                 skeleton.num_soa_joints()
             ]));
@@ -75,7 +74,6 @@ impl BlendNode {
         let speed = vec![1.0; samplers.len()];
         let finished_anims = vec![false; samplers.len()];
         let finished_blend = false;
-        let external_inputs = Vec::<usize>::new();
 
         Self {
             blend_job,
@@ -86,9 +84,7 @@ impl BlendNode {
             finished_anims,
             finished_blend,
             syncing: false,
-            longest_anim,
             sync_driver: 0,
-            external_inputs,
         }
     }
 
@@ -126,7 +122,7 @@ impl BlendNode {
                 let driver_ratio = driver_duration / anim_duration;
 
                 self.seek[i] += dt.as_secs_f32() * self.speed[i] * driver_ratio;
-                
+
                 if self.looping[i] {
                     self.seek[i] %= anim_duration;
                 } else {
@@ -135,9 +131,9 @@ impl BlendNode {
                         self.finished_anims[i] = true;
                     }
                 }
-                
+
                 let ratio = self.seek[i] / anim_duration;
-                
+
                 sampler.set_ratio(ratio);
                 sampler.run().unwrap();
             }
@@ -181,8 +177,8 @@ impl BlendNode {
     }
 
     // Returns the input's index. This is useful for graph-based inputs
-    // It is used to index into the blend job layers, and the following vectors: looping, seek, speed, and finished_anims
-    pub fn set_input(&mut self, input: Arc<RwLock<Vec<SoaTransform>>>) -> usize {
+    // The return value is used to index into the blend job layers, and the following vectors: looping, seek, speed, and finished_anims
+    pub fn set_input(&mut self, input: Rc<RefCell<Vec<SoaTransform>>>) -> usize {
         self.blend_job
             .layers_mut()
             .push(BlendingLayer::new(input.clone()));
@@ -198,7 +194,7 @@ impl BlendNode {
     }
 
     // Convenience methods
-    pub fn set_output(&mut self, output: Arc<RwLock<Vec<SoaTransform>>>) {
+    pub fn set_output(&mut self, output: Rc<RefCell<Vec<SoaTransform>>>) {
         self.blend_job.set_output(output.clone());
     }
 
@@ -208,7 +204,7 @@ impl BlendNode {
 }
 
 // This is used by the graph evaluator whether or not to evaluate the next node.
-// The index refers to the bool params vector...
+// It indexes into the bool params vector...
 pub struct ConditionNode {
     pub index: usize,
 }
@@ -219,18 +215,23 @@ impl ConditionNode {
     }
 }
 
+// This is where your state machine ends its execution. State machines are evaluated every frame.
+pub struct EndNode {
+    pub output: Rc<RefCell<Vec<SoaTransform>>>
+}
+
 // This node turns local-space bone matrices into model-space matrices.
 // It is usually the output node of an animgraph
 pub struct LocalToModelNode {
-    pub l2m_job: LocalToModelJobArc,
-    pub models: Arc<RwLock<Vec<glam::Mat4>>>,
+    pub l2m_job: LocalToModelJobRc,
+    pub models: Rc<RefCell<Vec<glam::Mat4>>>,
 }
 
 impl LocalToModelNode {
-    pub fn new(skeleton: Arc<Skeleton>, locals: Arc<RwLock<Vec<SoaTransform>>>) -> Self {
+    pub fn new(skeleton: Rc<Skeleton>, locals: Rc<RefCell<Vec<SoaTransform>>>) -> Self {
         let mut o = Self {
             l2m_job: LocalToModelJob::default(),
-            models: Arc::new(RwLock::new(vec![
+            models: Rc::new(RefCell::new(vec![
                 glam::Mat4::default();
                 skeleton.num_joints()
             ])),
@@ -258,6 +259,7 @@ impl ParamBoolNode {
         Self { idx }
     }
 }
+
 pub struct ParamFloatNode {
     pub idx: usize,
 }
@@ -267,6 +269,7 @@ impl ParamFloatNode {
         Self { idx }
     }
 }
+
 pub struct ParamIntNode {
     pub idx: usize,
 }
@@ -276,6 +279,7 @@ impl ParamIntNode {
         Self { idx }
     }
 }
+
 pub struct ParamUintNode {
     pub idx: usize,
 }
@@ -285,6 +289,7 @@ impl ParamUintNode {
         Self { idx }
     }
 }
+
 pub struct ParamVec3Node {
     pub idx: usize,
 }
@@ -295,8 +300,8 @@ impl ParamVec3Node {
     }
 }
 
-pub struct SampleNode {
-    pub sample_job: SamplingJobArc,
+pub struct SamplerNode {
+    pub sample_job: SamplingJobRc,
     pub seek: f32,
     pub speed: f32,
     pub looping: bool,
@@ -304,15 +309,15 @@ pub struct SampleNode {
 }
 
 // This node samples an animation. This is the simplest node and should be used whenever a single animation will be used, as it is the fastest.
-impl SampleNode {
-    pub fn new(skeleton: Arc<Skeleton>, animation: Arc<Animation>) -> Self {
-        let mut sample_job = SamplingJobArc::default();
+impl SamplerNode {
+    pub fn new(skeleton: Rc<Skeleton>, animation: Rc<Animation>) -> Self {
+        let mut sample_job = SamplingJobRc::default();
 
         sample_job.set_animation(animation.clone());
 
         sample_job.set_context(SamplingContext::new(animation.num_tracks()));
 
-        let sample_out = Arc::new(RwLock::new(vec![
+        let sample_out = Rc::new(RefCell::new(vec![
             SoaTransform::default();
             skeleton.num_soa_joints()
         ]));
@@ -353,46 +358,21 @@ impl SampleNode {
 
 // This is the most complex node type because it manages the current state, does callbacks, and assigns weights to blending jobs.
 pub struct StateMachineNode {
-    pub nodes: Vec<usize>,
-    pub edges: Vec<usize>,
-    pub start: usize,
-    pub end: usize,
-    pub active_node: usize,
+    pub graph: SlotMapGraph<AnimNode, AnimEdge>,
+    pub start: NodeIndex,
+    pub end: NodeIndex,
+    pub active_node: NodeIndex,
 }
 
 impl StateMachineNode {
-    pub fn new(node_idx: usize) -> Self {
-        let mut nodes = Vec::new();
-        nodes.push(node_idx);
+    pub fn new(node: AnimNode) -> Self {
+        let mut graph = SlotMapGraph::<AnimNode, AnimEdge>::default();
+        let node_idx = graph.add_node(node);
         Self {
-            nodes,
-            edges: Vec::new(),
-            start: 0,
-            end: 0,
-            active_node: 0,
-        }
-    }
-}
-
-// This is used to do transitions between two state machines.
-// Currently uses lerp to blend
-// In the future it'll send events.
-pub struct TransitionNode {
-    pub blend: BlendNode,
-    pub weight1: f32,
-    pub weight2: f32,
-    pub duration: f32,
-    pub elapsed: f32,
-}
-
-impl TransitionNode {
-    pub fn new(skeleton: Arc<Skeleton>) -> Self {
-        Self {
-            blend: BlendNode::new(skeleton, Vec::new()),
-            weight1: 1.0,
-            weight2: 0.0,
-            duration: 0.2,
-            elapsed: 0.0,
+            graph: SlotMapGraph::<AnimNode, AnimEdge>::default(),
+            start: node_idx,
+            end: node_idx,
+            active_node: node_idx,
         }
     }
 }

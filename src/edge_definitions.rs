@@ -12,3 +12,18 @@ pub enum SimpleEdgeDefinition {}
 pub struct BlendEdgeDefinition {
     pub layer: usize,
 }
+
+// This is used to do transitions between two state machines.
+// Currently uses lerp to blend
+// In the future it'll send events.
+pub struct TransitionEdgeDefinition {
+    pub duration: f32,
+}
+
+impl TransitionEdgeDefinition {
+    pub fn new() -> Self {
+        Self {
+            duration: 0.2,
+        }
+    }
+}
