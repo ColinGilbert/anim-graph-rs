@@ -13,12 +13,12 @@ use mapgraph::{
 
 // This is the structure for our animation graph.
 pub struct AnimGraph {
-    pub skeleton: Rc<Skeleton>, // We keep this here, as many of the nodes inside will require a skeleton
+    skeleton: Rc<Skeleton>, // We keep this here, as many of the nodes inside will require a skeleton
     pub graph: SlotMapGraph<StateMachineNode, TransitionEdge>,
     pub root: Option<NodeIndex>, // This should be your character's idle state
-    pub current_state_machine: Option<NodeIndex>,
-    pub current_transition: Option<EdgeIndex>,
-    pub output: LocalToModelNode,
+    current_state_machine: Option<NodeIndex>,
+    current_transition: Option<EdgeIndex>,
+    pub output: LocalToModelNode, // This node is special in that it gets connected to the outputs of the graph evaluation while also being used as the results we're looking for.
     // The following are the parameters this graph stores.
     bools: Vec<bool>,
     floats: Vec<f32>,
@@ -88,7 +88,7 @@ impl AnimGraph {
 
         result
     }
-    
+
     pub fn create_vec3_param(&mut self, value: glam::Vec3, param: String) -> usize {
         self.vec3s.push(value);
         let result = self.vec3s.len() - 1;
@@ -112,10 +112,33 @@ impl AnimGraph {
     pub fn set_int(&mut self, value: i64, idx: usize) {
         self.ints[idx] = value;
     }
-    
+
     pub fn set_vec3(&mut self, value: glam::Vec3, idx: usize) {
         self.vec3s[idx] = value;
     }
 
+    pub fn get_bool_index(&self, name: &String) -> usize {
+        let result = self.bool_names[name];
+        result
+    }
+    
+    pub fn get_float_index(&self, name: &String) -> usize {
+        let result = self.float_names[name];
+        result
+    }
+    
+    pub fn get_uint_index(&self, name: &String) -> usize {
+        let result = self.uint_names[name];
+        result
+    }
+    
+    pub fn get_int_index(&self, name: &String) -> usize {
+        let result = self.int_names[name];
+        result
+    }
 
+    pub fn get_vec3_index(&self, name: &String) -> usize {
+        let result = self.vec3_names[name];
+        result
+    }
 }
