@@ -6,17 +6,18 @@ use std::rc::*;
 
 use crate::edges::AnimEdge;
 
+#[derive(Copy, Clone)]
 pub enum AnimNode {
-    Blend(BlendNode),
-    Condition(ConditionNode),
-    End(EndNode),
-    LocalToModel(LocalToModelNode),
+    Blend(usize),
+    Condition(usize),
+    End(usize),
+    LocalToModel(usize),
     ParamBool(ParamBoolNode),
     ParamFloat(ParamFloatNode),
     ParamInt(ParamIntNode),
     ParamUint(ParamUintNode),
     ParamVec3(ParamVec3Node),
-    Sampler(SamplerNode),
+    Sampler(usize),
     Start,
     // StateMachine(StateMachineNode),
     // Transition(TransitionNode),
@@ -205,6 +206,7 @@ impl BlendNode {
 
 // This is used by the graph evaluator whether or not to evaluate the next node.
 // It indexes into the bool params vector...
+#[derive(Copy, Clone)]
 pub struct ConditionNode {
     pub index: usize,
 }
@@ -217,6 +219,7 @@ impl ConditionNode {
 
 // THis is the same as a condition node, but is based on the inverse of the indexed boolean
 // It indexes into the bool params vector...
+#[derive(Copy, Clone)]
 pub struct ConditionNodeNot {
     pub index: usize,
 }
@@ -233,7 +236,7 @@ pub struct EndNode {
 }
 
 impl EndNode {
-    fn new(skeleton: Rc<Skeleton>) -> Self {
+    pub fn new(skeleton: Rc<Skeleton>) -> Self {
         let output = Rc::new(RefCell::new(vec![SoaTransform::default(); skeleton.num_joints()]));
         Self {
             output,
@@ -273,6 +276,7 @@ impl LocalToModelNode {
 }
 
 // These parameter nodes are used during animation graph evaluation to kick off (and forcibly end) transitions
+#[derive(Copy, Clone)]
 pub struct ParamBoolNode {
     pub idx: usize,
 }
@@ -283,6 +287,7 @@ impl ParamBoolNode {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ParamFloatNode {
     pub idx: usize,
 }
@@ -293,6 +298,7 @@ impl ParamFloatNode {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ParamIntNode {
     pub idx: usize,
 }
@@ -303,6 +309,7 @@ impl ParamIntNode {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ParamUintNode {
     pub idx: usize,
 }
@@ -312,7 +319,7 @@ impl ParamUintNode {
         Self { idx }
     }
 }
-
+#[derive(Copy, Clone)]
 pub struct ParamVec3Node {
     pub idx: usize,
 }
@@ -388,11 +395,10 @@ pub struct StateMachineNode {
 }
 
 impl StateMachineNode {
-    pub fn new(skeleton: Rc<Skeleton>) -> Self {
+    pub fn new(end_node_idx: usize) -> Self {
         let mut graph = SlotMapGraph::<AnimNode, AnimEdge>::default();
         let start_idx = graph.add_node(AnimNode::Start);
-        let end_idx = graph.add_node(AnimNode::End(EndNode::new(skeleton)));
-        let _ = graph.add_edge(AnimEdge::Simple, start_idx, end_idx);
+        let end_idx = graph.add_node(AnimNode::End(end_node_idx));
         Self {
             graph: SlotMapGraph::<AnimNode, AnimEdge>::default(),
             start: start_idx,

@@ -31,6 +31,11 @@ pub struct AnimGraph {
     uint_names: HashMap<String, usize>,
     int_names: HashMap<String, usize>,
     vec3_names: HashMap<String, usize>,
+    // The following are used to store the node types that can't be copied in-memory
+    sampler_nodes: Vec<SamplerNode>,
+    blend_nodes: Vec<BlendNode>,
+    l2m_nodes: Vec<LocalToModelNode>,
+    end_nodes: Vec<EndNode>,
 }
 
 impl AnimGraph {
@@ -54,6 +59,10 @@ impl AnimGraph {
             uint_names: HashMap::new(),
             int_names: HashMap::new(),
             vec3_names: HashMap::new(),
+            sampler_nodes: Vec::new(),
+            blend_nodes: Vec::new(),
+            l2m_nodes: Vec::new(),
+            end_nodes: Vec::new(),
         }
     }
 
@@ -121,17 +130,17 @@ impl AnimGraph {
         let result = self.bool_names[name];
         result
     }
-    
+
     pub fn get_float_index(&self, name: &String) -> usize {
         let result = self.float_names[name];
         result
     }
-    
+
     pub fn get_uint_index(&self, name: &String) -> usize {
         let result = self.uint_names[name];
         result
     }
-    
+
     pub fn get_int_index(&self, name: &String) -> usize {
         let result = self.int_names[name];
         result
@@ -142,18 +151,80 @@ impl AnimGraph {
         result
     }
 
-    pub fn evaluate() {
-        
+    pub fn create_state_machine(&mut self) -> NodeIndex {
+        self.end_nodes.push(EndNode::new(self.skeleton.clone()));
+        let end_node_idx = self.end_nodes.len() - 1;
+        let result = self.graph.add_node(StateMachineNode::new(end_node_idx));
+        result
     }
 
+    pub fn create_sampler_node(
+        &mut self,
+        animation: Rc<Animation>,
+        state_machine_idx: NodeIndex,
+        parent_node: NodeIndex,
+    ) -> NodeIndex {
+        self.sampler_nodes
+            .push(SamplerNode::new(self.skeleton.clone(), animation.clone()));
+        let node_idx = self.sampler_nodes.len() - 1;
+        let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
+        let new_node = state_machine.graph.add_node(AnimNode::Sampler(node_idx));
 
-    fn evaluate_state_machine(&mut self, state_machine_idx: NodeIndex) {
+        let _ = state_machine
+            .graph
+            .add_edge(AnimEdge::Simple, parent_node, new_node)
+            .unwrap();
 
+        new_node
     }
+
+    pub fn create_blend_node(
+        &mut self,
+        animations: Vec<Rc<Animation>>,
+        state_machine_idx: NodeIndex,
+        parent_node: NodeIndex,
+    ) -> NodeIndex {
+        self.blend_nodes
+            .push(BlendNode::new(self.skeleton.clone(), animations));
+        let node_idx = self.blend_nodes.len() - 1;
+        let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
+        let new_node = state_machine.graph.add_node(AnimNode::Blend(node_idx));
+
+        let _ = state_machine
+            .graph
+            .add_edge(AnimEdge::Simple, parent_node, new_node)
+            .unwrap();
+
+        new_node
+    }
+
+    pub fn create_l2m_node(
+        &mut self,
+        state_machine_idx: NodeIndex,
+        parent_node: NodeIndex,
+    ) -> NodeIndex {
+        self.l2m_nodes
+            .push(LocalToModelNode::new(self.skeleton.clone()));
+        let node_idx = self.sampler_nodes.len() - 1;
+        let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
+        let new_node = state_machine.graph.add_node(AnimNode::LocalToModel(node_idx));
+
+        let _ = state_machine
+            .graph
+            .add_edge(AnimEdge::Simple, parent_node, new_node)
+            .unwrap();
+
+        new_node
+    }
+
+    
+
+
+    pub fn evaluate() {}
+
+    fn evaluate_state_machine(&mut self, state_machine_idx: NodeIndex) {}
+
     // The two NodeIndex types refer to different graph instances.
     // Possible to-do: Make typesafe
-    fn evaluate_anim_node(&mut self, state_machine_idx: NodeIndex, anim_node_idx: NodeIndex) {
-
-    }
-
+    fn evaluate_anim_node(&mut self, state_machine_idx: NodeIndex, anim_node_idx: NodeIndex) {}
 }
