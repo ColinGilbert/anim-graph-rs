@@ -61,7 +61,7 @@ impl AnimGraph {
             vec3_names: HashMap::new(),
             sampler_nodes: Vec::new(),
             blend_nodes: Vec::new(),
-            l2m_nodes: Vec::new(),
+            // l2m_nodes: Vec::new(),
             end_nodes: Vec::new(),
         }
     }
