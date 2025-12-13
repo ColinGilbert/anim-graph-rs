@@ -18,7 +18,7 @@ pub struct AnimGraph {
     pub root: Option<NodeIndex>, // This should be your character's idle state
     current_state_machine: Option<NodeIndex>,
     current_transition: Option<EdgeIndex>,
-    pub output: LocalToModelNode, // This node is special in that it gets connected to the outputs of the graph evaluation while also being used as the results we're looking for.
+    pub output: LocalToModelNode, // This node is special in that it dynamically gets connected to the outputs of whichever state machine or transition is currently being evaluated, while also being used as the results we're looking for.
     // The following are the parameters this graph stores.
     bools: Vec<bool>,
     floats: Vec<f32>,
@@ -141,4 +141,19 @@ impl AnimGraph {
         let result = self.vec3_names[name];
         result
     }
+
+    pub fn evaluate() {
+        
+    }
+
+
+    fn evaluate_state_machine(&mut self, state_machine_idx: NodeIndex) {
+
+    }
+    // The two NodeIndex types refer to different graph instances.
+    // Possible to-do: Make typesafe
+    fn evaluate_anim_node(&mut self, state_machine_idx: NodeIndex, anim_node_idx: NodeIndex) {
+
+    }
+
 }
