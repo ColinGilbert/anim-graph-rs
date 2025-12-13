@@ -34,7 +34,7 @@ pub struct AnimGraph {
     // The following are used to store the node types that can't be copied in-memory
     sampler_nodes: Vec<SamplerNode>,
     blend_nodes: Vec<BlendNode>,
-    l2m_nodes: Vec<LocalToModelNode>,
+    // l2m_nodes: Vec<LocalToModelNode>,
     end_nodes: Vec<EndNode>,
 }
 
@@ -198,26 +198,26 @@ impl AnimGraph {
         new_node
     }
 
-    pub fn create_l2m_node(
-        &mut self,
-        state_machine_idx: NodeIndex,
-        parent_node: NodeIndex,
-    ) -> NodeIndex {
-        self.l2m_nodes
-            .push(LocalToModelNode::new(self.skeleton.clone()));
-        let node_idx = self.sampler_nodes.len() - 1;
-        let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
-        let new_node = state_machine.graph.add_node(AnimNode::LocalToModel(node_idx));
+    // pub fn create_l2m_node(
+    //     &mut self,
+    //     state_machine_idx: NodeIndex,
+    //     parent_node: NodeIndex,
+    // ) -> NodeIndex {
+    //     self.l2m_nodes
+    //         .push(LocalToModelNode::new(self.skeleton.clone()));
+    //     let node_idx = self.sampler_nodes.len() - 1;
+    //     let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
+    //     let new_node = state_machine.graph.add_node(AnimNode::LocalToModel(node_idx));
 
-        let _ = state_machine
-            .graph
-            .add_edge(AnimEdge::Simple, parent_node, new_node)
-            .unwrap();
+    //     let _ = state_machine
+    //         .graph
+    //         .add_edge(AnimEdge::Simple, parent_node, new_node)
+    //         .unwrap();
 
-        new_node
-    }
+    //     new_node
+    // }
 
-    
+
 
 
     pub fn evaluate() {}
