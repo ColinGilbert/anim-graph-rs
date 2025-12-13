@@ -18,6 +18,7 @@ pub struct AnimGraph {
     pub root: Option<NodeIndex>, // This should be your character's idle state
     pub current_state_machine: Option<NodeIndex>,
     pub current_transition: Option<EdgeIndex>,
+    pub output: LocalToModelNode,
     // The following are the parameters this graph stores.
     pub bools: Vec<bool>,
     pub floats: Vec<f32>,
@@ -35,12 +36,14 @@ pub struct AnimGraph {
 impl AnimGraph {
     pub fn new(skeleton: Rc<Skeleton>) -> Self {
         let graph = SlotMapGraph::<StateMachineNode, TransitionEdge>::default();
+        let output = LocalToModelNode::new(skeleton.clone());
         Self {
             skeleton: skeleton.clone(),
             graph,
             root: None,
             current_state_machine: None,
             current_transition: None,
+            output,
             bools: Vec::new(),
             floats: Vec::new(),
             uints: Vec::new(),
@@ -53,7 +56,4 @@ impl AnimGraph {
             vec_names: HashMap::new(),
         }
     }
-
-
-
 }

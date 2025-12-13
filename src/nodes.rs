@@ -18,8 +18,8 @@ pub enum AnimNode {
     ParamVec3(ParamVec3Node),
     Sampler(SamplerNode),
     Start,
-   // StateMachine(StateMachineNode),
-   // Transition(TransitionNode),
+    // StateMachine(StateMachineNode),
+    // Transition(TransitionNode),
 }
 
 // This node blends multiple animations together.
@@ -215,9 +215,21 @@ impl ConditionNode {
     }
 }
 
+// THis is the same as a condition node, but is based on the inverse of the indexed boolean
+// It indexes into the bool params vector...
+pub struct ConditionNodeNot {
+    pub index: usize,
+}
+
+impl ConditionNodeNot {
+    pub fn new(index: usize) -> Self {
+        Self { index }
+    }
+}
+
 // This is where your state machine ends its execution. State machines are evaluated every frame.
 pub struct EndNode {
-    pub output: Rc<RefCell<Vec<SoaTransform>>>
+    pub output: Rc<RefCell<Vec<SoaTransform>>>,
 }
 
 // This node turns local-space bone matrices into model-space matrices.
@@ -228,7 +240,7 @@ pub struct LocalToModelNode {
 }
 
 impl LocalToModelNode {
-    pub fn new(skeleton: Rc<Skeleton>, locals: Rc<RefCell<Vec<SoaTransform>>>) -> Self {
+    pub fn new(skeleton: Rc<Skeleton>) -> Self {
         let mut o = Self {
             l2m_job: LocalToModelJob::default(),
             models: Rc::new(RefCell::new(vec![
@@ -238,7 +250,6 @@ impl LocalToModelNode {
         };
 
         o.l2m_job.set_skeleton(skeleton.clone());
-        o.l2m_job.set_input(locals.clone());
         o.l2m_job.set_output(o.models.clone());
 
         o
@@ -246,6 +257,10 @@ impl LocalToModelNode {
 
     pub fn update(&mut self) {
         self.l2m_job.run().unwrap();
+    }
+
+    pub fn set_input(&mut self, locals: Rc<RefCell<Vec<SoaTransform>>>) {
+        self.l2m_job.set_input(locals.clone());
     }
 }
 
