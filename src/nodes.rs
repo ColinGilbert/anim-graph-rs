@@ -19,6 +19,11 @@ pub enum AnimNode {
     // Transition(TransitionNode),
 }
 
+pub enum AnimGraphNode {
+    StateMachine(usize),
+    Transition(usize),
+}
+
 // This node blends multiple animations together.
 // Inputs can be its embedded animations, sampler nodes, state machine nodes, or other blend nodes.
 // Note: In order to sync animations, they must be added to the node explicitly as part of its parameters.
@@ -359,6 +364,29 @@ impl StateMachineNode {
             end: end_idx,
             active_node: start_idx,
             outputs: Rc::new(RefCell::new(Vec::new())),
+        }
+    }
+}
+
+// This is used to do transitions between two state machines
+// Currently uses lerp to blend
+// In the future it'll send events
+pub struct TransitionNode {
+    pub blend: BlendNode,
+    pub weight1: f32,
+    pub weight2: f32,
+    pub duration: f32,
+    pub elapsed: f32,
+}
+
+impl TransitionNode {
+    pub fn new(skeleton: Rc<Skeleton>, duration: f32) -> Self {
+        Self {
+            blend: BlendNode::new(skeleton, Vec::new()),
+            weight1: 1.0,
+            weight2: 0.0,
+            duration,
+            elapsed: 0.0,
         }
     }
 }
