@@ -534,22 +534,32 @@ impl AnimGraph {
         let mut next_nodes = HashSet::<NodeIndex>::new();
         while !finished {
             // For each node...
-            
+
             // Evaluate the current node and obtain the next set of nodes to track
             for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
                 nodes_to_evaluate.push(*n);
             }
             for n in &nodes_to_evaluate {
-                self.evaluate_anim_node(state_machine_pool_idx, state_machine_graph_idx, *n, dt);
+                self.evaluate_anim_node(
+                    state_machine_pool_idx,
+                    state_machine_graph_idx,
+                    *n,
+                    dt,
+                    &mut next_nodes,
+                );
             }
-            
+
             // Remove the visited nodes from the current trackers set
-            self.state_machine_nodes[state_machine_pool_idx].trackers.clear();
+            self.state_machine_nodes[state_machine_pool_idx]
+                .trackers
+                .clear();
             nodes_to_evaluate.clear();
-            
+
             // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
             for n in &next_nodes {
-                self.state_machine_nodes[state_machine_pool_idx].trackers.insert(*n);
+                self.state_machine_nodes[state_machine_pool_idx]
+                    .trackers
+                    .insert(*n);
             }
             next_nodes.clear();
 
@@ -584,11 +594,64 @@ impl AnimGraph {
     fn evaluate_anim_node(
         &mut self,
         state_machine_pool_idx: usize,
-        state_machine_idx: NodeIndex,
+        #[allow(unused)] state_machine_graph_idx: NodeIndex,
         anim_node_idx: NodeIndex,
         dt: web_time::Duration,
+        next_nodes: &mut HashSet<NodeIndex>,
     ) {
         // For each anim node type, update them accordingly
-        let anim_node = self.state_machine_nodes[state_machine_pool_idx].graph.node(anim_node_idx).unwrap().weight();
+        let anim_node = self.state_machine_nodes[state_machine_pool_idx]
+            .graph
+            .node(anim_node_idx)
+            .unwrap()
+            .weight();
+
+        match anim_node {
+            AnimNode::Blend(val) => {
+                self.blend_nodes[*val].update(dt);
+                for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
+                    .graph
+                    .outputs(anim_node_idx)
+                {
+                    let to = edge.to();
+                    next_nodes.insert(to);
+                }
+            }
+            AnimNode::Condition(val) => {
+                if self.bools[*val] {
+                    for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
+                        .graph
+                        .outputs(anim_node_idx)
+                    {
+                        let to = edge.to();
+                        next_nodes.insert(to);
+                    }
+                }
+            }
+            AnimNode::ConditionNot(val) => {
+                if !self.bools[*val] {
+                    for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
+                        .graph
+                        .outputs(anim_node_idx)
+                    {
+                        let to = edge.to();
+                        next_nodes.insert(to);
+                    }
+                }
+            }
+            AnimNode::End(_) => {}          // Do nothing as this is the end
+            AnimNode::LocalToModel(_) => {} // This is currently left unused
+            AnimNode::Sampler(val) => {
+                self.sampler_nodes[*val].update(dt);
+                for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
+                    .graph
+                    .outputs(anim_node_idx)
+                {
+                    let to = edge.to();
+                    next_nodes.insert(to);
+                }
+            }
+            AnimNode::Start => {} // Handling the Start node is done in evaluate_state_machine
+        }
     }
 }

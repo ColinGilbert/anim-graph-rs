@@ -11,6 +11,7 @@ use crate::edges::AnimEdge;
 pub enum AnimNode {
     Blend(usize),
     Condition(usize),
+    ConditionNot(usize),
     End(usize),
     LocalToModel(usize),
     Sampler(usize),
