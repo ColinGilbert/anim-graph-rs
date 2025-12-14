@@ -1,5 +1,5 @@
 
-use ozz_animation_rs::Skeleton;
+use ozz_animation_rs::{Skeleton};
 use std::{rc::Rc};
 use crate::nodes::BlendNode;
 

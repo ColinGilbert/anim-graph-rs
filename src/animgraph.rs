@@ -1,7 +1,5 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use ozz_animation_rs::*;
 
@@ -20,7 +18,7 @@ pub struct AnimGraph {
     pub root: Option<NodeIndex>, // This should be your character's idle state
     current_state_machine: Option<NodeIndex>,
     current_transition: Option<EdgeIndex>,
-    pub output: LocalToModelNode, // This node is special in that it dynamically gets connected to the outputs of whichever state machine or transition is currently being evaluated, while also being used as the results we're looking for.
+    output_node: LocalToModelNode, // This node is special in that it dynamically gets connected to the outputs of whichever state machine or transition is currently being evaluated, while also being used as the results we're looking for.
     // The following are the parameters this graph stores.
     bools: Vec<bool>,
     floats: Vec<f32>,
@@ -36,21 +34,20 @@ pub struct AnimGraph {
     // The following are used to store the node types that can't be copied in-memory
     sampler_nodes: Vec<SamplerNode>,
     blend_nodes: Vec<BlendNode>,
-    // l2m_nodes: Vec<LocalToModelNode>,
     end_nodes: Vec<EndNode>,
 }
 
 impl AnimGraph {
     pub fn new(skeleton: Rc<Skeleton>) -> Self {
         let graph = SlotMapGraph::<StateMachineNode, TransitionEdge>::default();
-        let output = LocalToModelNode::new(skeleton.clone());
+        let output_node = LocalToModelNode::new(skeleton.clone());
         Self {
             skeleton: skeleton.clone(),
             graph,
             root: None,
             current_state_machine: None,
             current_transition: None,
-            output,
+            output_node,
             bools: Vec::new(),
             floats: Vec::new(),
             uints: Vec::new(),
@@ -63,7 +60,6 @@ impl AnimGraph {
             vec3_names: HashMap::new(),
             sampler_nodes: Vec::new(),
             blend_nodes: Vec::new(),
-            // l2m_nodes: Vec::new(),
             end_nodes: Vec::new(),
         }
     }
@@ -161,25 +157,36 @@ impl AnimGraph {
     }
 
     // Returns success status
-    pub fn create_transition(&mut self, from: NodeIndex, to: NodeIndex, duration: f32) -> Option<EdgeIndex> {
+    pub fn create_transition(
+        &mut self,
+        from: NodeIndex,
+        to: NodeIndex,
+        duration: f32,
+    ) -> Option<EdgeIndex> {
         let transition = TransitionEdge::new(self.skeleton.clone(), duration);
         let results = self.graph.add_edge(transition, from, to);
         match results {
-            Ok(val) => { return Some(val); },
-            Err(_) => { return None; }
+            Ok(val) => {
+                return Some(val);
+            }
+            Err(_) => {
+                return None;
+            }
         }
     }
-
 
     pub fn create_sampler_node(
         &mut self,
         animation: Rc<Animation>,
         state_machine_idx: NodeIndex,
         parent_node: NodeIndex,
-        speed: f32
+        speed: f32,
     ) -> NodeIndex {
-        self.sampler_nodes
-            .push(SamplerNode::new(self.skeleton.clone(), animation.clone(), speed));
+        self.sampler_nodes.push(SamplerNode::new(
+            self.skeleton.clone(),
+            animation.clone(),
+            speed,
+        ));
         let node_idx = self.sampler_nodes.len() - 1;
         let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
         let new_node = state_machine.graph.add_node(AnimNode::Sampler(node_idx));
@@ -212,25 +219,6 @@ impl AnimGraph {
         new_node
     }
 
-    // pub fn create_l2m_node(
-    //     &mut self,
-    //     state_machine_idx: NodeIndex,
-    //     parent_node: NodeIndex,
-    // ) -> NodeIndex {
-    //     self.l2m_nodes
-    //         .push(LocalToModelNode::new(self.skeleton.clone()));
-    //     let node_idx = self.sampler_nodes.len() - 1;
-    //     let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
-    //     let new_node = state_machine.graph.add_node(AnimNode::LocalToModel(node_idx));
-
-    //     let _ = state_machine
-    //         .graph
-    //         .add_edge(AnimEdge::Simple, parent_node, new_node)
-    //         .unwrap();
-
-    //     new_node
-    // }
-
     // Returns success status
     pub fn connect_anim_nodes(
         &mut self,
@@ -243,7 +231,7 @@ impl AnimGraph {
         let child = state_machine.graph.node(child_idx).unwrap().weight();
         let mut is_simple_edge = true;
         match child {
-            AnimNode::Blend(val) => {
+            AnimNode::Blend(_) => {
                 // Get output of parent node
                 match parent {
                     AnimNode::End(_) => {
@@ -299,9 +287,40 @@ impl AnimGraph {
         true
     }
 
-    pub fn evaluate(dt: web_time::Duration) {}
+    pub fn get_output(&mut self, output: &mut Vec<glam::Mat4>) {
+        output.clear();
+        self.output_node.l2m_job.run().unwrap();
+        for m in self.output_node.models.borrow().iter(){
+            output.push(*m);
+        }
+    }
 
-    fn evaluate_state_machine(&mut self, state_machine_idx: NodeIndex, dt: web_time::Duration) {}
+
+    pub fn evaluate(&mut self, dt: web_time::Duration) {
+        match self.current_state_machine {
+            Some(val) => {
+                self.evaluate_state_machine(val, dt);
+            }
+            None => match self.current_transition {
+                Some(val) => {
+                    self.evaluate_transition(val, dt);
+                }
+                None => {
+                    println!("[AnimGraph] No state machine nor transition to evaluate")
+                }
+            },
+        }
+    }
+
+    fn evaluate_transition(&mut self, transition_idx: EdgeIndex, dt: web_time::Duration) {
+        let transition = self.graph.edge(transition_idx).unwrap().weight();
+        self.output_node.l2m_job.set_input(transition.blend.blend_job.output().unwrap().clone());
+    }
+
+    fn evaluate_state_machine(&mut self, state_machine_idx: NodeIndex, dt: web_time::Duration) {
+        let state_machine = self.graph.node(state_machine_idx).unwrap().weight();
+        self.output_node.l2m_job.set_input(state_machine.outputs.clone());
+    }
 
     // The two NodeIndex types refer to different graph instances.
     // Possible to-do: Make typesafe
