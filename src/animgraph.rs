@@ -589,5 +589,6 @@ impl AnimGraph {
         dt: web_time::Duration,
     ) {
         // For each anim node type, update them accordingly
+        let anim_node = self.state_machine_nodes[state_machine_pool_idx].graph.node(anim_node_idx).unwrap().weight();
     }
 }
