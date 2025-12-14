@@ -160,14 +160,26 @@ impl AnimGraph {
         result
     }
 
+    // Returns success status
+    pub fn create_transition(&mut self, from: NodeIndex, to: NodeIndex, duration: f32) -> Option<EdgeIndex> {
+        let transition = TransitionEdge::new(self.skeleton.clone(), duration);
+        let results = self.graph.add_edge(transition, from, to);
+        match results {
+            Ok(val) => { return Some(val); },
+            Err(_) => { return None; }
+        }
+    }
+
+
     pub fn create_sampler_node(
         &mut self,
         animation: Rc<Animation>,
         state_machine_idx: NodeIndex,
         parent_node: NodeIndex,
+        speed: f32
     ) -> NodeIndex {
         self.sampler_nodes
-            .push(SamplerNode::new(self.skeleton.clone(), animation.clone()));
+            .push(SamplerNode::new(self.skeleton.clone(), animation.clone(), speed));
         let node_idx = self.sampler_nodes.len() - 1;
         let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
         let new_node = state_machine.graph.add_node(AnimNode::Sampler(node_idx));

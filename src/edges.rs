@@ -34,12 +34,12 @@ pub struct TransitionEdge {
 }
 
 impl TransitionEdge {
-    pub fn new(skeleton: Rc<Skeleton>) -> Self {
+    pub fn new(skeleton: Rc<Skeleton>, duration: f32) -> Self {
         Self {
             blend: BlendNode::new(skeleton, Vec::new()),
             weight1: 1.0,
             weight2: 0.0,
-            duration: 0.2,
+            duration,
             elapsed: 0.0,
         }
     }

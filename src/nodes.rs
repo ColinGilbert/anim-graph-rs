@@ -2,6 +2,7 @@ use mapgraph::aliases::SlotMapGraph;
 use mapgraph::map::slotmap::NodeIndex;
 use ozz_animation_rs::*;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::*;
 
 use crate::edges::AnimEdge;
@@ -12,11 +13,6 @@ pub enum AnimNode {
     Condition(usize),
     End(usize),
     LocalToModel(usize),
-    ParamBool(ParamBoolNode),
-    ParamFloat(ParamFloatNode),
-    ParamInt(ParamIntNode),
-    ParamUint(ParamUintNode),
-    ParamVec3(ParamVec3Node),
     Sampler(usize),
     Start,
     // StateMachine(StateMachineNode),
@@ -28,13 +24,23 @@ pub enum AnimNode {
 // Note: In order to sync animations, they must be added to the node explicitly as part of its parameters.
 // This is because a sampler node that gets independently evaluated can't be synced with this node.
 pub struct BlendNode {
+    // The ozz blend job that does the heavy lifting 
     pub blend_job: BlendingJobRc,
+    // These samplers are for animations that'll be synced together. Optional.
     pub samplers: Vec<SamplingJobRc>,
+    // Whether or not a given animation is looping. Optional.
     pub looping: Vec<bool>,
+    // The seek points of the animations in the samplers. Optional.
     pub seek: Vec<f32>,
+    // The various speeds at which the animations in the samplers are playing. Optional.
     pub speed: Vec<f32>,
+    // These parameters are there for when you want to drive the animations yourself and update it in code. Optional.
+    pub speed_params: HashMap<usize, usize>,
+    pub weight_params: HashMap<usize, usize>,
+    // These are here to tell whether or not we should be continuing to blend.
     pub finished_anims: Vec<bool>,
     pub finished_blend: bool,
+    // These are for synchronizing between the samplers. Optional.
     pub syncing: bool,
     pub sync_driver: usize,
 }
@@ -73,6 +79,8 @@ impl BlendNode {
         let looping = vec![false; samplers.len()];
         let seek = vec![0.0; samplers.len()];
         let speed = vec![1.0; samplers.len()];
+        let speed_params = HashMap::<usize, usize>::new();
+        let weight_params = HashMap::<usize, usize>::new();
         let finished_anims = vec![false; samplers.len()];
         let finished_blend = false;
 
@@ -82,6 +90,8 @@ impl BlendNode {
             looping,
             seek,
             speed,
+            speed_params,
+            weight_params,
             finished_anims,
             finished_blend,
             syncing: false,
@@ -115,7 +125,6 @@ impl BlendNode {
                 .duration();
             for (i, sampler) in self.samplers.iter_mut().enumerate() {
                 let anim_duration = sampler.animation().unwrap().duration();
-                //let longest_ratio = anim_duration / longest_duration;
                 let driver_ratio = driver_duration / anim_duration;
 
                 self.seek[i] += dt.as_secs_f32() * self.speed[i] * driver_ratio;
@@ -233,10 +242,11 @@ pub struct EndNode {
 
 impl EndNode {
     pub fn new(skeleton: Rc<Skeleton>) -> Self {
-        let output = Rc::new(RefCell::new(vec![SoaTransform::default(); skeleton.num_joints()]));
-        Self {
-            output,
-        }
+        let output = Rc::new(RefCell::new(vec![
+            SoaTransform::default();
+            skeleton.num_joints()
+        ]));
+        Self { output }
     }
 }
 // This node turns local-space bone matrices into model-space matrices.
@@ -271,72 +281,18 @@ impl LocalToModelNode {
     }
 }
 
-// These parameter nodes are used during animation graph evaluation to kick off (and forcibly end) transitions
-#[derive(Copy, Clone)]
-pub struct ParamBoolNode {
-    pub idx: usize,
-}
-
-impl ParamBoolNode {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct ParamFloatNode {
-    pub idx: usize,
-}
-
-impl ParamFloatNode {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct ParamIntNode {
-    pub idx: usize,
-}
-
-impl ParamIntNode {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct ParamUintNode {
-    pub idx: usize,
-}
-
-impl ParamUintNode {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-#[derive(Copy, Clone)]
-pub struct ParamVec3Node {
-    pub idx: usize,
-}
-
-impl ParamVec3Node {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-
 pub struct SamplerNode {
     pub sample_job: SamplingJobRc,
     pub seek: f32,
     pub speed: f32,
     pub looping: bool,
     pub finished: bool,
+    pub speed_param: Option<usize>,
 }
 
 // This node samples an animation. This is the simplest node and should be used whenever a single animation will be used, as it is the fastest.
 impl SamplerNode {
-    pub fn new(skeleton: Rc<Skeleton>, animation: Rc<Animation>) -> Self {
+    pub fn new(skeleton: Rc<Skeleton>, animation: Rc<Animation>, speed: f32) -> Self {
         let mut sample_job = SamplingJobRc::default();
 
         sample_job.set_animation(animation.clone());
@@ -353,9 +309,10 @@ impl SamplerNode {
         Self {
             sample_job,
             seek: 0.0,
-            speed: 1.0,
+            speed,
             looping: false,
             finished: false,
+            speed_param: None
         }
     }
 
