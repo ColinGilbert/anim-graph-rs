@@ -1,16 +1,13 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::rc::Rc;
 
-use mapgraph::graph::Node;
 use ozz_animation_rs::*;
 
 use crate::edges::*;
 use crate::nodes::*;
 
-use mapgraph::{
-    aliases::SlotMapGraph,
-    map::slotmap::{EdgeIndex, NodeIndex},
-};
+use mapgraph::{aliases::SlotMapGraph, map::slotmap::NodeIndex};
 
 // This is the structure for our animation graph.
 pub struct AnimGraph {
@@ -359,7 +356,7 @@ impl AnimGraph {
         let node_results = self.graph.node(node_idx).unwrap().weight();
         match node_results {
             AnimGraphNode::StateMachine(val) => {
-                self.evaluate_state_machine(*val, dt);
+                self.evaluate_state_machine(node_idx, *val, dt);
             }
             AnimGraphNode::Transition(val) => {
                 self.evaluate_transition(*val, node_idx, dt);
@@ -381,20 +378,20 @@ impl AnimGraph {
                 .unwrap()
                 .clone(),
         );
-        
-        // Pipe the output of "from" and "to" state machines to our blend job, and evaluate them 
+
+        // Pipe the output of "from" and "to" state machines to our blend job, and evaluate them
         let froms = self.graph.inputs(transition_graph_idx);
         let mut evaluate = false;
         let mut state_machine_pool_idx = 0;
-
+        let mut from = transition_graph_idx; // It won't stay at this value.
         for (i, edge) in froms.into_iter().enumerate() {
             if i > 0 {
                 println!("AnimGraph] Warning: Transition with more than one input.");
                 break;
             }
 
-            let from_graph_idx = edge.1.from();
-            let n = self.graph.node(from_graph_idx).unwrap().weight();
+            from = edge.1.from();
+            let n = self.graph.node(from).unwrap().weight();
             match n {
                 AnimGraphNode::StateMachine(val) => {
                     evaluate = true;
@@ -415,9 +412,9 @@ impl AnimGraph {
                 }
             }
         }
-    
+
         if evaluate {
-            self.evaluate_state_machine(state_machine_pool_idx, dt);
+            self.evaluate_state_machine(from, state_machine_pool_idx, dt);
         } else {
             println!("[AnimGraph] Warning: No \"from\" node present.");
             return;
@@ -427,7 +424,6 @@ impl AnimGraph {
         evaluate = false;
         state_machine_pool_idx = 0;
         let mut to = transition_graph_idx;
-
         for (i, edge) in tos.into_iter().enumerate() {
             if i > 0 {
                 println!("AnimGraph] Warning: Transition with more than one output.");
@@ -458,7 +454,7 @@ impl AnimGraph {
         }
 
         if evaluate {
-            self.evaluate_state_machine(state_machine_pool_idx, dt);
+            self.evaluate_state_machine(to, state_machine_pool_idx, dt);
         } else {
             println!("[AnimGraph] Warning: No \"to\" node present.");
             return;
@@ -485,6 +481,7 @@ impl AnimGraph {
             .blend_job
             .layers_mut()[1]
             .weight = weight2;
+
         // Run blend job
         let blend_results = self.transition_nodes[transition_pool_idx]
             .blend
@@ -493,7 +490,7 @@ impl AnimGraph {
         match blend_results {
             Ok(_) => {}
             Err(val) => {
-                println!("Ozz error in blend job: {}", val);
+                println!("Ozz error in transition blend job: {}", val);
             }
         }
 
@@ -503,12 +500,90 @@ impl AnimGraph {
         }
     }
 
-    fn evaluate_state_machine(&mut self, state_machine_idx: usize, dt: web_time::Duration) {}
+    fn evaluate_state_machine(
+        &mut self,
+        state_machine_graph_idx: NodeIndex,
+        state_machine_pool_idx: usize,
+        dt: web_time::Duration,
+    ) {
+        let start = self.state_machine_nodes[state_machine_pool_idx]
+            .graph
+            .node(self.state_machine_nodes[state_machine_pool_idx].start)
+            .unwrap()
+            .weight();
+
+        match start {
+            AnimNode::Start => {
+                let outputs = self
+                    .graph
+                    .outputs(self.state_machine_nodes[state_machine_pool_idx].start);
+                for out in outputs {
+                    self.state_machine_nodes[state_machine_pool_idx]
+                        .trackers
+                        .insert(out.1.to());
+                }
+            }
+            _ => {
+                println!("[AnimGraph] Invalid start node type")
+            }
+        }
+
+        let mut finished = false;
+
+        let mut nodes_to_evaluate = Vec::<NodeIndex>::new();
+        let mut next_nodes = HashSet::<NodeIndex>::new();
+        while !finished {
+            // For each node...
+            
+            // Evaluate the current node and obtain the next set of nodes to track
+            for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
+                nodes_to_evaluate.push(*n);
+            }
+            for n in &nodes_to_evaluate {
+                self.evaluate_anim_node(state_machine_pool_idx, state_machine_graph_idx, *n, dt);
+            }
+            
+            // Remove the visited nodes from the current trackers set
+            self.state_machine_nodes[state_machine_pool_idx].trackers.clear();
+            nodes_to_evaluate.clear();
+            
+            // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
+            for n in &next_nodes {
+                self.state_machine_nodes[state_machine_pool_idx].trackers.insert(*n);
+            }
+            next_nodes.clear();
+
+            // Test to see if there is only a single tracker pointing to the end node.
+            // If so, flip the "finished" variable to true to end the show
+            let only_one_node_left = self.state_machine_nodes[state_machine_pool_idx]
+                .trackers
+                .len()
+                == 1;
+            let mut end_node_reached = false;
+            if only_one_node_left {
+                for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
+                    let anim_node = self.state_machine_nodes[state_machine_pool_idx]
+                        .graph
+                        .node(*n)
+                        .unwrap()
+                        .weight();
+                    match anim_node {
+                        AnimNode::End(_) => end_node_reached = true,
+                        _ => {}
+                    }
+                }
+                if end_node_reached {
+                    finished = true;
+                }
+            }
+        }
+    }
 
     // The two NodeIndex types refer to different graph instances
     // Possible to-do: Make typesafe
     fn evaluate_anim_node(
         &mut self,
+        state_machine_pool_idx: usize,
         state_machine_idx: NodeIndex,
         anim_node_idx: NodeIndex,
         dt: web_time::Duration,

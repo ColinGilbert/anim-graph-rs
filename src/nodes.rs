@@ -2,7 +2,7 @@ use mapgraph::aliases::SlotMapGraph;
 use mapgraph::map::slotmap::NodeIndex;
 use ozz_animation_rs::*;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::*;
 
 use crate::edges::AnimEdge;
@@ -351,6 +351,7 @@ pub struct StateMachineNode {
     pub end: NodeIndex,
     pub active_node: NodeIndex,
     pub outputs: Rc<RefCell<Vec<SoaTransform>>>,
+    pub trackers:HashSet<NodeIndex>
 }
 
 impl StateMachineNode {
@@ -358,12 +359,15 @@ impl StateMachineNode {
         let mut graph = SlotMapGraph::<AnimNode, AnimEdge>::default();
         let start_idx = graph.add_node(AnimNode::Start);
         let end_idx = graph.add_node(AnimNode::End(end_node_idx));
+        let mut trackers = HashSet::new();
+        trackers.insert(start_idx);
         Self {
             graph: SlotMapGraph::<AnimNode, AnimEdge>::default(),
             start: start_idx,
             end: end_idx,
             active_node: start_idx,
             outputs: Rc::new(RefCell::new(Vec::new())),
+            trackers
         }
     }
 }
