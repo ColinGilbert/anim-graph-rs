@@ -204,14 +204,14 @@ impl BlendNode {
         i
     }
 
-    // Convenience methods
-    pub fn set_output(&mut self, output: Rc<RefCell<Vec<SoaTransform>>>) {
-        self.blend_job.set_output(output.clone());
-    }
+    // // Convenience methods
+    // pub fn set_output(&mut self, output: Rc<RefCell<Vec<SoaTransform>>>) {
+    //     self.blend_job.set_output(output.clone());
+    // }
 
-    pub fn set_layer_weight(&mut self, index: usize, weight: f32) {
-        self.blend_job.layers_mut()[index].weight = weight;
-    }
+    // pub fn set_layer_weight(&mut self, index: usize, weight: f32) {
+    //     self.blend_job.layers_mut()[index].weight = weight;
+    // }
 }
 
 // This is used by the graph evaluator whether or not to evaluate the next node.

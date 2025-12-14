@@ -362,24 +362,145 @@ impl AnimGraph {
                 self.evaluate_state_machine(*val, dt);
             }
             AnimGraphNode::Transition(val) => {
-                self.evaluate_transition(*val, dt);
+                self.evaluate_transition(*val, node_idx, dt);
             }
         }
     }
 
-    fn evaluate_transition(&mut self, transition_idx: usize, dt: web_time::Duration) {
+    fn evaluate_transition(
+        &mut self,
+        transition_pool_idx: usize,
+        transition_graph_idx: NodeIndex,
+        dt: web_time::Duration,
+    ) {
         self.output_node.l2m_job.set_input(
-            self.transition_nodes[transition_idx]
+            self.transition_nodes[transition_pool_idx]
                 .blend
                 .blend_job
                 .output()
                 .unwrap()
                 .clone(),
         );
-        // Update the "from" and "to" state machines
+        
+        // Pipe the output of "from" and "to" state machines to our blend job, and evaluate them 
+        let froms = self.graph.inputs(transition_graph_idx);
+        let mut evaluate = false;
+        let mut state_machine_pool_idx = 0;
+
+        for (i, edge) in froms.into_iter().enumerate() {
+            if i > 0 {
+                println!("AnimGraph] Warning: Transition with more than one input.");
+                break;
+            }
+
+            let from_graph_idx = edge.1.from();
+            let n = self.graph.node(from_graph_idx).unwrap().weight();
+            match n {
+                AnimGraphNode::StateMachine(val) => {
+                    evaluate = true;
+                    state_machine_pool_idx = *val;
+                    self.transition_nodes[transition_pool_idx]
+                        .blend
+                        .blend_job
+                        .layers_mut()[0]
+                        .transform = self.state_machine_nodes[state_machine_pool_idx]
+                        .outputs
+                        .clone();
+                }
+                AnimGraphNode::Transition(_) => {
+                    println!(
+                        "[AnimGraph] Warning: Transition to transition edges aren't supported."
+                    );
+                    return;
+                }
+            }
+        }
+    
+        if evaluate {
+            self.evaluate_state_machine(state_machine_pool_idx, dt);
+        } else {
+            println!("[AnimGraph] Warning: No \"from\" node present.");
+            return;
+        }
+
+        let tos = self.graph.outputs(transition_graph_idx);
+        evaluate = false;
+        state_machine_pool_idx = 0;
+        let mut to = transition_graph_idx;
+
+        for (i, edge) in tos.into_iter().enumerate() {
+            if i > 0 {
+                println!("AnimGraph] Warning: Transition with more than one output.");
+                break;
+            }
+            let to_graph_idx = edge.1.to();
+            to = to_graph_idx;
+            let n = self.graph.node(to_graph_idx).unwrap().weight();
+            match n {
+                AnimGraphNode::StateMachine(val) => {
+                    evaluate = true;
+                    state_machine_pool_idx = *val;
+                    self.transition_nodes[transition_pool_idx]
+                        .blend
+                        .blend_job
+                        .layers_mut()[1]
+                        .transform = self.state_machine_nodes[state_machine_pool_idx]
+                        .outputs
+                        .clone();
+                }
+                AnimGraphNode::Transition(_) => {
+                    println!(
+                        "[AnimGraph] Warning: Transition to transition edges aren't supported."
+                    );
+                    return;
+                }
+            }
+        }
+
+        if evaluate {
+            self.evaluate_state_machine(state_machine_pool_idx, dt);
+        } else {
+            println!("[AnimGraph] Warning: No \"to\" node present.");
+            return;
+        }
+
         // Calculate the blend weights based on time elapsed
+        self.transition_nodes[transition_pool_idx].elapsed =
+            self.transition_nodes[transition_pool_idx].elapsed + dt.as_secs_f32();
+
+        let mut weight2 = self.transition_nodes[transition_pool_idx].elapsed
+            / self.transition_nodes[transition_pool_idx].duration;
+        if weight2 > 1.0 {
+            weight2 = 1.0;
+        }
+        let weight1 = 1.0 - weight2;
+
+        self.transition_nodes[transition_pool_idx]
+            .blend
+            .blend_job
+            .layers_mut()[0]
+            .weight = weight1;
+        self.transition_nodes[transition_pool_idx]
+            .blend
+            .blend_job
+            .layers_mut()[1]
+            .weight = weight2;
         // Run blend job
+        let blend_results = self.transition_nodes[transition_pool_idx]
+            .blend
+            .blend_job
+            .run();
+        match blend_results {
+            Ok(_) => {}
+            Err(val) => {
+                println!("Ozz error in blend job: {}", val);
+            }
+        }
+
         // When the transition is over, set the current node to the "to" state machine
+        if weight2 >= 1.0 {
+            self.current_node = to;
+        }
     }
 
     fn evaluate_state_machine(&mut self, state_machine_idx: usize, dt: web_time::Duration) {}
