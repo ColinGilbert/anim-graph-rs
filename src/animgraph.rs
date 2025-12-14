@@ -1,5 +1,7 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use ozz_animation_rs::*;
 
@@ -217,14 +219,85 @@ impl AnimGraph {
     //     new_node
     // }
 
+    // Returns success status
+    pub fn connect_anim_nodes(
+        &mut self,
+        state_machine_idx: NodeIndex,
+        parent_idx: NodeIndex,
+        child_idx: NodeIndex,
+    ) -> bool {
+        let state_machine = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
+        let parent = state_machine.graph.node(parent_idx).unwrap().weight();
+        let child = state_machine.graph.node(child_idx).unwrap().weight();
+        let mut is_simple_edge = true;
+        match child {
+            AnimNode::Blend(val) => {
+                // Get output of parent node
+                match parent {
+                    AnimNode::End(_) => {
+                        return false;
+                    }
+                    AnimNode::LocalToModel(_) => {
+                        return false;
+                    }
+                    AnimNode::Sampler(val) => {
+                        is_simple_edge = false;
+                        let parent_outputs = self.sampler_nodes[*val]
+                            .sample_job
+                            .output()
+                            .unwrap()
+                            .clone();
+                        let layer = self.blend_nodes[*val].set_input(parent_outputs);
+                        let _ = state_machine.graph.add_edge(
+                            AnimEdge::Blend(BlendEdge::new(layer)),
+                            parent_idx,
+                            child_idx,
+                        );
+                    }
+                    AnimNode::Blend(val) => {
+                        is_simple_edge = false;
+                        let parent_outputs = self.sampler_nodes[*val]
+                            .sample_job
+                            .output()
+                            .unwrap()
+                            .clone();
+                        let layer = self.blend_nodes[*val].set_input(parent_outputs);
+                        let _ = state_machine.graph.add_edge(
+                            AnimEdge::Blend(BlendEdge::new(layer)),
+                            parent_idx,
+                            child_idx,
+                        );
+                    }
+                    _ => {}
+                }
+                // let layer_idx = self.blend_nodes[*val].set_input(input);
+            }
+            AnimNode::Start => {
+                return false;
+            }
+            _ => {}
+        }
 
+        if is_simple_edge {
+            let _ = state_machine
+                .graph
+                .add_edge(AnimEdge::Simple, parent_idx, child_idx);
+        }
 
+        true
+    }
 
-    pub fn evaluate() {}
+    pub fn evaluate(dt: web_time::Duration) {}
 
-    fn evaluate_state_machine(&mut self, state_machine_idx: NodeIndex) {}
+    fn evaluate_state_machine(&mut self, state_machine_idx: NodeIndex, dt: web_time::Duration) {}
 
     // The two NodeIndex types refer to different graph instances.
     // Possible to-do: Make typesafe
-    fn evaluate_anim_node(&mut self, state_machine_idx: NodeIndex, anim_node_idx: NodeIndex) {}
+    fn evaluate_anim_node(
+        &mut self,
+        state_machine_idx: NodeIndex,
+        anim_node_idx: NodeIndex,
+        dt: web_time::Duration,
+    ) {
+    }
 }

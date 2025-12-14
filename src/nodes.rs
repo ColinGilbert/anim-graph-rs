@@ -109,10 +109,6 @@ impl BlendNode {
             }
         } else if !self.finished_blend {
             // Syncing between anims, blend job hasn't finished yet
-            // let longest_duration = self.samplers[self.longest_anim]
-            //     .animation()
-            //     .unwrap()
-            //     .duration();
             let driver_duration = self.samplers[self.sync_driver]
                 .animation()
                 .unwrap()

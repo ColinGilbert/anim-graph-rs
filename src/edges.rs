@@ -14,6 +14,14 @@ pub struct BlendEdge {
     pub layer: usize, // used by the graph evaluator on the next node's blend job. This info is needed to index into the blend node's layers
 }
 
+impl BlendEdge {
+    pub fn new(layer: usize) -> Self {
+        Self {
+            layer,
+        }
+    }
+}
+
 // This is used to do transitions between two state machines
 // Currently uses lerp to blend
 // In the future it'll send events
