@@ -41,6 +41,8 @@ pub struct BlendNode {
     // The various speeds at which the animations in the samplers are playing. Optional.
     pub speed: Vec<f32>,
     // These parameters are there for when you want to drive the animations yourself and update it in code. Optional.
+    // The first generic usize argument refers to the samplers indices.
+    // The second one refers to the parameter indices stored in the animgraph. Both are floats.
     pub speed_params: HashMap<usize, usize>,
     pub weight_params: HashMap<usize, usize>,
     // These are here to tell whether or not we should be continuing to blend.
@@ -204,15 +206,6 @@ impl BlendNode {
 
         i
     }
-
-    // // Convenience methods
-    // pub fn set_output(&mut self, output: Rc<RefCell<Vec<SoaTransform>>>) {
-    //     self.blend_job.set_output(output.clone());
-    // }
-
-    // pub fn set_layer_weight(&mut self, index: usize, weight: f32) {
-    //     self.blend_job.layers_mut()[index].weight = weight;
-    // }
 }
 
 // This is used by the graph evaluator whether or not to evaluate the next node.

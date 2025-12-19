@@ -1,22 +1,14 @@
-use mapgraph::{
-    aliases::SlotMapGraph,
-    map::slotmap::{NodeIndex},
-};
+use mapgraph::{aliases::SlotMapGraph, map::slotmap::NodeIndex};
 
-use crate::{edge_definitions::AnimEdgeDefinition};
+use crate::edge_definitions::AnimEdgeDefinition;
 
 pub enum AnimNodeDefinition {
     Blend(BlendNodeDefinition),
     Condition(ConditionNodeDefinition),
     End,
-    LocalToModel(LocalToModelNodeDefinition),
-    ParamBool(ParamBoolNodeDefinition),
-    ParamFloat(ParamFloatNodeDefinition),
-    ParamInt(ParamIntNodeDefinition),
-    ParamUint(ParamUintNodeDefinition),
-    ParamVec3(ParamVec3NodeDefinition),
+    LocalToModel,
     Sampler(SamplerNodeDefinition),
-    StartNode,
+    Start,
     StateMachine(StateMachineNodeDefinition),
     // Transition(TransitionNodeDefinition),
 }
@@ -64,64 +56,18 @@ impl ConditionNodeDefinition {
     }
 }
 
-// This node turns local-space bone matrices into model-space matrices.
-// It is usually the output node of an animgraph
-pub struct LocalToModelNodeDefinition {}
-
-impl LocalToModelNodeDefinition {
-    pub fn new() -> Self {
-        Self {}
-    }
+pub struct ConditionNodeNotDefinition {
+    pub index: usize,
 }
 
-// These parameter nodes are used during animation graph evaluation to kick off (and forcibly end) transitions
-pub struct ParamBoolNodeDefinition {
-    pub idx: usize,
-}
-
-impl ParamBoolNodeDefinition {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-pub struct ParamFloatNodeDefinition {
-    pub idx: usize,
-}
-
-impl ParamFloatNodeDefinition {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-pub struct ParamIntNodeDefinition {
-    pub idx: usize,
-}
-
-impl ParamIntNodeDefinition {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-pub struct ParamUintNodeDefinition {
-    pub idx: usize,
-}
-
-impl ParamUintNodeDefinition {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
-    }
-}
-pub struct ParamVec3NodeDefinition {
-    pub idx: usize,
-}
-
-impl ParamVec3NodeDefinition {
-    pub fn new(idx: usize) -> Self {
-        Self { idx }
+impl ConditionNodeNotDefinition {
+    pub fn new(index: usize) -> Self {
+        Self { index }
     }
 }
 
 pub struct SamplerNodeDefinition {
+    pub animation: String,
     pub seek: f32,
     pub speed: f32,
     pub looping: bool,
@@ -129,8 +75,9 @@ pub struct SamplerNodeDefinition {
 
 // This node samples an animation. This is the simplest node and should be used whenever a single animation will be used, as it is the fastest.
 impl SamplerNodeDefinition {
-    pub fn new() -> Self {
+    pub fn new(animation: String) -> Self {
         Self {
+            animation,
             seek: 0.0,
             looping: false,
             speed: 1.0,
@@ -141,16 +88,28 @@ impl SamplerNodeDefinition {
 // This is the most complex node type because it manages the current state, does callbacks, and assigns weights to blending jobs.
 pub struct StateMachineNodeDefinition {
     pub graph: SlotMapGraph<AnimNodeDefinition, AnimEdgeDefinition>,
-    pub start: Option<NodeIndex>,
-    pub end: Option<NodeIndex>,
+    pub start: NodeIndex,
+    pub end: NodeIndex,
 }
 
 impl StateMachineNodeDefinition {
     pub fn new() -> Self {
-        Self {
-            graph: SlotMapGraph::<AnimNodeDefinition, AnimEdgeDefinition>::default(),
-            start: None,
-            end: None,
-        }
+        let mut graph = SlotMapGraph::<AnimNodeDefinition, AnimEdgeDefinition>::default();
+        let start = graph.add_node(AnimNodeDefinition::Start);
+        let end = graph.add_node(AnimNodeDefinition::End);
+        Self { graph, start, end }
+    }
+}
+
+// This is used to do transitions between two state machines.
+// Currently uses lerp to blend
+// In the future it'll send events.
+pub struct TransitionNodeDefinition {
+    pub duration: f32,
+}
+
+impl TransitionNodeDefinition {
+    pub fn new() -> Self {
+        Self { duration: 0.2 }
     }
 }
