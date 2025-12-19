@@ -297,43 +297,7 @@ impl AnimGraph {
                     .graph
                     .outputs(current_anim_node_definition)
                 {
-                    let anim_edge_definition = edge.weight();
-                    match anim_edge_definition {
-                        AnimEdgeDefinition::Simple => {
-                            let results = results.state_machine_nodes[state_machine_pool_idx]
-                                .graph
-                                .add_edge(AnimEdge::Simple, *current_anim_node_results, edge.to());
-                            match results {
-                                Ok(_) => {}
-                                Err(msg) => {
-                                    println!(
-                                        "[AnimGraph] Error adding simple edge from definition. Error: {}",
-                                        msg
-                                    );
-                                    return None;
-                                }
-                            }
-                        }
-                        AnimEdgeDefinition::Blend(val) => {
-                            let results = results.state_machine_nodes[state_machine_pool_idx]
-                                .graph
-                                .add_edge(
-                                    AnimEdge::Blend(*val),
-                                    *current_anim_node_results,
-                                    edge.to(),
-                                );
-                            match results {
-                                Ok(_) => {}
-                                Err(msg) => {
-                                    println!(
-                                        "[AnimGraph] Error adding blend edge from definition. Error: {}",
-                                        msg
-                                    );
-                                    return None;
-                                }
-                            }
-                        }
-                    }
+                    results.connect_anim_nodes(state_machine_defines_to_runtimes[&current_state_machine_idx_define], *current_anim_node_results, edge.to());
 
                     if !already_evaluated.contains(&edge.to()) {
                         anim_nodes_to_evaluate.push(edge.to());
@@ -580,13 +544,13 @@ impl AnimGraph {
     // Returns success status
     fn connect_anim_nodes(
         &mut self,
-        node_idx: NodeIndex,
+        state_machine_idx: NodeIndex,
         parent_idx: NodeIndex,
         child_idx: NodeIndex,
     ) -> bool {
-        let animgraph_node = self.graph.node_mut(node_idx).unwrap().weight_mut();
+        let state_machine__node = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
         let i: usize;
-        match animgraph_node {
+        match state_machine__node {
             AnimGraphNode::StateMachine(val) => {
                 i = *val;
             }
