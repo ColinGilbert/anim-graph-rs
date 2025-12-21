@@ -74,6 +74,19 @@ impl AnimGraph {
         animations_by_name: &HashMap<String, Rc<Animation>>,
     ) -> Option<Self> {
         let mut results = AnimGraph::new(skeleton);
+        
+        //  Do the params
+        results.bools = definition.bools.clone();
+        results.bool_names = definition.bool_names.clone();
+        results.floats = definition.floats.clone();
+        results.float_names = definition.float_names.clone();
+        results.uints = definition.uints.clone();
+        results.uint_names = definition.uint_names.clone();
+        results.ints = definition.ints.clone();
+        results.int_names = definition.int_names.clone();
+        results.vec3s = definition.vec3s.clone();
+        results.vec3_names = definition.vec3_names.clone();
+
 
         // Make sure to keep a map of nodes belonging to both graphs for quick reference, as indices are not stable.
         let mut state_machine_defines_to_runtimes = HashMap::<NodeIndex, NodeIndex>::new();
