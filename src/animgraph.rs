@@ -70,7 +70,7 @@ impl AnimGraph {
 
     pub fn create_from_definition(
         skeleton: Rc<Skeleton>,
-        definition: AnimGraphDefinition,
+        definition: &AnimGraphDefinition,
         animations_by_name: &HashMap<String, Rc<Animation>>,
     ) -> Option<Self> {
         let mut results = AnimGraph::new(skeleton);
