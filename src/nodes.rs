@@ -344,7 +344,7 @@ pub struct StateMachineNode {
     pub start: NodeIndex,
     pub end: NodeIndex,
     pub active_node: NodeIndex,
-    pub outputs: Rc<RefCell<Vec<SoaTransform>>>,
+    pub output: Rc<RefCell<Vec<SoaTransform>>>,
     pub trackers:HashSet<NodeIndex>
 }
 
@@ -360,7 +360,7 @@ impl StateMachineNode {
             start: start_idx,
             end: end_idx,
             active_node: start_idx,
-            outputs: Rc::new(RefCell::new(Vec::new())),
+            output: Rc::new(RefCell::new(Vec::new())),
             trackers
         }
     }

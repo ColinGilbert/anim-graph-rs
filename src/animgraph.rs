@@ -74,7 +74,7 @@ impl AnimGraph {
         animations_by_name: &HashMap<String, Rc<Animation>>,
     ) -> Option<Self> {
         let mut results = AnimGraph::new(skeleton);
-        
+
         //  Do the params
         results.bools = definition.bools.clone();
         results.bool_names = definition.bool_names.clone();
@@ -444,7 +444,7 @@ impl AnimGraph {
         self.state_machine_nodes.push(StateMachineNode::new(end_node_idx));
         let state_machine_idx = self.state_machine_nodes.len() - 1;
 
-        self.state_machine_nodes[state_machine_idx].outputs = self.end_nodes[end_node_idx].output.clone();
+        self.state_machine_nodes[state_machine_idx].output = self.end_nodes[end_node_idx].output.clone();
 
         let result = self
             .graph
@@ -694,7 +694,7 @@ impl AnimGraph {
                         .blend_job
                         .layers_mut()[0]
                         .transform = self.state_machine_nodes[state_machine_pool_idx]
-                        .outputs
+                        .output
                         .clone();
                 }
                 AnimGraphNode::Transition(_) => {
@@ -732,7 +732,7 @@ impl AnimGraph {
                         .blend_job
                         .layers_mut()[1]
                         .transform = self.state_machine_nodes[state_machine_pool_idx]
-                        .outputs
+                        .output
                         .clone();
                 }
                 AnimGraphNode::Transition(_) => {
