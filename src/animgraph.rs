@@ -6,10 +6,8 @@ use mapgraph::map::slotmap::EdgeIndex;
 use ozz_animation_rs::*;
 
 use crate::animgraph_definitions::AnimGraphDefinition;
-use crate::edge_definitions::AnimEdgeDefinition;
 use crate::edges::*;
 use crate::node_definitions::AnimNodeDefinition;
-use crate::node_definitions::StateMachineNodeDefinition;
 use crate::node_definitions::TransitionNodeDefinition;
 use crate::nodes::*;
 
@@ -44,7 +42,7 @@ pub struct AnimGraph {
 
 impl AnimGraph {
     pub fn new(skeleton: Rc<Skeleton>) -> Self {
-        let mut graph = SlotMapGraph::<AnimGraphNode, ()>::default();
+        let graph = SlotMapGraph::<AnimGraphNode, ()>::default();
         let output_node = LocalToModelNode::new(skeleton.clone());
         Self {
             skeleton: skeleton.clone(),
@@ -73,36 +71,17 @@ impl AnimGraph {
     pub fn create_from_definition(
         skeleton: Rc<Skeleton>,
         definition: AnimGraphDefinition,
+        animations_by_name: &HashMap<String, Rc<Animation>>,
     ) -> Option<Self> {
         let mut results = AnimGraph::new(skeleton);
 
-        match definition.root {
-            Some(val) => {
-                let root_node_opt = results.create_state_machine_from_definition(
-                    definition.graph.node(val).unwrap().weight(),
-                );
-
-                // We check to see if the root node was created
-                match root_node_opt {
-                    Some(val) => {
-                        results.root = Some(val);
-                        results.current_node = Some(val);
-                    }
-                    None => {
-                        println!("[Animgraph] Could not find root: invalid root node");
-                        return None;
-                    }
-                }
-            }
-
-            None => return None,
-        }
-        // We now extract the definitions graph and turn it into an animgraph...
         // Make sure to keep a map of nodes belonging to both graphs for quick reference, as indices are not stable.
         let mut state_machine_defines_to_runtimes = HashMap::<NodeIndex, NodeIndex>::new();
         let mut transition_defines_to_runtimes = HashMap::<EdgeIndex, NodeIndex>::new();
         let mut state_machine_runtimes_to_defines = HashMap::<NodeIndex, NodeIndex>::new();
         let mut transition_runtimes_to_defines = HashMap::<NodeIndex, EdgeIndex>::new();
+
+        // We now extract the definitions graph and turn it into an animgraph...
 
         let root_state_machine_idx_define = definition.root.unwrap();
         let root_state_machine_idx_runtime = results.root.unwrap();
@@ -129,26 +108,13 @@ impl AnimGraph {
                 definition.graph.outputs(current_state_machine_idx_define)
             {
                 if !state_machine_defines_to_runtimes.contains_key(&edge_define.to()) {
-                    let state_machine_define_graph_node =
-                        definition.graph.node(edge_define.to()).unwrap();
-                    let state_machine_runtime_opt = results.create_state_machine_from_definition(
-                        state_machine_define_graph_node.weight(),
-                    );
-                    // We'll need this result later.
-                    state_machine_runtime = state_machine_runtime_opt;
+                    // let state_machine_define_graph_node =
+                    //     definition.graph.node(edge_define.to()).unwrap();
+                    state_machine_runtime = Some(results.create_state_machine());
 
-                    match state_machine_runtime_opt {
-                        Some(val) => {
-                            state_machine_runtimes_to_defines.insert(val, edge_define.to());
-                            state_machines_to_evaluate.push(edge_define.to());
-                        }
-                        None => {
-                            println!(
-                                "[AnimGraph] Could not create state machine node from definition."
-                            );
-                            return None;
-                        }
-                    }
+                    state_machine_runtimes_to_defines
+                        .insert(state_machine_runtime.unwrap(), edge_define.to());
+                    state_machines_to_evaluate.push(edge_define.to());
                 }
 
                 if !transition_defines_to_runtimes.contains_key(&edge_idx) {
@@ -164,7 +130,7 @@ impl AnimGraph {
                             return None;
                         }
                     }
-
+                    // Now we add the edges to the transition
                     let add_from_results = results.graph.add_edge(
                         (),
                         *state_machine_defines_to_runtimes
@@ -214,10 +180,8 @@ impl AnimGraph {
                 .unwrap()
                 .weight();
 
-            let mut state_machine_pool_idx = 0;
             match state_machine_node {
-                AnimGraphNode::StateMachine(val) => {
-                    state_machine_pool_idx = *val;
+                AnimGraphNode::StateMachine(_) => {
                 }
                 AnimGraphNode::Transition(_) => {
                     // WTF?
@@ -239,8 +203,9 @@ impl AnimGraph {
                 if anim_node_defines_to_runtimes.contains_key(&anim_node_definition_graph_idx) {
                     let anim_node_runtime_graph_idx = results.create_anim_node_from_definition(
                         state_machine_runtime.unwrap(),
-                        state_machine_pool_idx,
+                        // state_machine_pool_idx,
                         anim_node_definition.unwrap().weight(),
+                        animations_by_name,
                     );
 
                     match anim_node_runtime_graph_idx {
@@ -284,7 +249,7 @@ impl AnimGraph {
 
             // We add the edges between the anim nodes.
             let mut state_machine_finished_adding_edges = false;
-            let mut current_anim_node_definition = definition.root.unwrap();
+            let mut current_anim_node_definition = definition.root.unwrap(); // This is a temporary value that is guaranteed to change to a valid one. Did this so the compiler would let me do this without using an Option
             //anim_nodes_to_evaluate.push(definition.root.unwrap());
             let mut already_evaluated = HashSet::<NodeIndex>::new();
             while !state_machine_finished_adding_edges {
@@ -297,7 +262,11 @@ impl AnimGraph {
                     .graph
                     .outputs(current_anim_node_definition)
                 {
-                    results.connect_anim_nodes(state_machine_defines_to_runtimes[&current_state_machine_idx_define], *current_anim_node_results, edge.to());
+                    results.connect_anim_nodes(
+                        state_machine_defines_to_runtimes[&current_state_machine_idx_define],
+                        *current_anim_node_results,
+                        edge.to(),
+                    );
 
                     if !already_evaluated.contains(&edge.to()) {
                         anim_nodes_to_evaluate.push(edge.to());
@@ -336,6 +305,21 @@ impl AnimGraph {
 
             if state_machines_to_evaluate.len() == 0 {
                 finished = true;
+            }
+        }
+
+        // Finally, setup the root node
+        match definition.root {
+            Some(val) => {
+                let root_node = state_machine_defines_to_runtimes[&val];
+                results.root = Some(root_node);
+                results.current_node = Some(root_node);
+
+            }
+
+            None => {
+                println!("[AnimGraph] Invalid root node found in definition");
+                return None;
             }
         }
 
@@ -443,17 +427,21 @@ impl AnimGraph {
     pub fn create_state_machine(&mut self) -> NodeIndex {
         self.end_nodes.push(EndNode::new(self.skeleton.clone()));
         let end_node_idx = self.end_nodes.len() - 1;
+
+        self.state_machine_nodes.push(StateMachineNode::new(end_node_idx));
+        let state_machine_idx = self.state_machine_nodes.len() - 1;
+
+        self.state_machine_nodes[state_machine_idx].outputs = self.end_nodes[end_node_idx].output.clone();
+
         let result = self
             .graph
-            .add_node(AnimGraphNode::StateMachine(end_node_idx));
+            .add_node(AnimGraphNode::StateMachine(state_machine_idx));
         result
     }
 
     // Returns success status
     fn create_transition(
         &mut self,
-        from: NodeIndex,
-        to: NodeIndex,
         duration: f32,
     ) -> Option<NodeIndex> {
         let transition = TransitionNode::new(self.skeleton.clone(), duration);
@@ -462,22 +450,6 @@ impl AnimGraph {
         let transition_node_graph_idx = self
             .graph
             .add_node(AnimGraphNode::Transition(transition_node_pool_idx));
-        let from_results = self.graph.add_edge((), from, transition_node_graph_idx);
-        match from_results {
-            Ok(_) => {}
-            Err(_) => {
-                let _ = self.graph.remove_node(transition_node_graph_idx);
-                return None;
-            }
-        }
-        let to_results = self.graph.add_edge((), transition_node_graph_idx, to);
-        match to_results {
-            Ok(_) => {}
-            Err(_) => {
-                let _ = self.graph.remove_node(transition_node_graph_idx);
-                return None;
-            }
-        }
 
         Some(transition_node_graph_idx)
     }
@@ -486,7 +458,7 @@ impl AnimGraph {
         &mut self,
         animation: Rc<Animation>,
         state_machine_idx: NodeIndex,
-        parent_node: NodeIndex,
+        //parent_node: NodeIndex,
         speed: f32,
     ) -> Option<NodeIndex> {
         self.sampler_nodes.push(SamplerNode::new(
@@ -502,44 +474,77 @@ impl AnimGraph {
                     .graph
                     .add_node(AnimNode::Sampler(sampler_node_idx));
 
-                let _ = self.state_machine_nodes[*val]
-                    .graph
-                    .add_edge(AnimEdge::Simple, parent_node, new_node)
-                    .unwrap();
+                // let _ = self.state_machine_nodes[*val]
+                //     .graph
+                //     .add_edge(AnimEdge::Simple, parent_node, new_node)
+                //     .unwrap();
 
                 Some(new_node)
             }
 
-            AnimGraphNode::Transition(_) => None,
+            AnimGraphNode::Transition(_) => {
+                println!("Tried to create a sampler node as a child of a transition. Invalid.");
+                None
+            }
         }
     }
 
     fn create_blend_node(
         &mut self,
-        animations: Vec<Rc<Animation>>,
+        samplers: Vec<String>,
+        animations_by_name: &HashMap<String, Rc<Animation>>,
         state_machine_idx: NodeIndex,
-        parent_node: NodeIndex,
+        // parent_node: NodeIndex,
     ) -> Option<NodeIndex> {
+        let mut animations = Vec::<Rc<Animation>>::new();
+        for s in samplers {
+            animations.push(animations_by_name[&s].clone());
+        }
         self.blend_nodes
             .push(BlendNode::new(self.skeleton.clone(), animations));
         let node_idx = self.blend_nodes.len() - 1;
-        let animgraph_node = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
+        let animgraph_node = self.graph.node(state_machine_idx).unwrap().weight();
         match animgraph_node {
             AnimGraphNode::StateMachine(val) => {
                 let new_node = self.state_machine_nodes[*val]
                     .graph
                     .add_node(AnimNode::Blend(node_idx));
 
-                let _ = self.state_machine_nodes[*val]
-                    .graph
-                    .add_edge(AnimEdge::Simple, parent_node, new_node)
-                    .unwrap();
+                // let _ = self.state_machine_nodes[*val]
+                //     .graph
+                //     .add_edge(AnimEdge::Simple, parent_node, new_node)
+                //     .unwrap();
 
                 Some(new_node)
             }
             AnimGraphNode::Transition(_) => None,
         }
     }
+
+    fn create_condition_node(
+        &mut self,
+        state_machine_graph_idx: NodeIndex,
+        param_index: usize,
+    ) -> Option<NodeIndex> {
+        let state_machine_node_idx = self.graph.node(state_machine_graph_idx).unwrap().weight();
+        match state_machine_node_idx {
+            AnimGraphNode::StateMachine(val) => {
+                let node_idx = self.state_machine_nodes[*val]
+                    .graph
+                    .add_node(AnimNode::Condition(param_index));
+                Some(node_idx)
+            }
+            AnimGraphNode::Transition(_) => {
+                println!("[AnimGraph] Cannot create a condition node as a child of a transition");
+                None
+            }
+        }
+    }
+    //     // fn create_end_node(state_machine_graph_idx: NodeIndex) -> Option<NodeIndex> {}
+    // fn create_sampler_node(state_machine_graph_idx: NodeIndex, animation: String, speed: f32) -> Option<NodeIndex> {
+
+    //     None
+    // }
 
     // Returns success status
     fn connect_anim_nodes(
@@ -548,9 +553,9 @@ impl AnimGraph {
         parent_idx: NodeIndex,
         child_idx: NodeIndex,
     ) -> bool {
-        let state_machine__node = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
+        let state_machine_node = self.graph.node_mut(state_machine_idx).unwrap().weight_mut();
         let i: usize;
-        match state_machine__node {
+        match state_machine_node {
             AnimGraphNode::StateMachine(val) => {
                 i = *val;
             }
@@ -576,9 +581,9 @@ impl AnimGraph {
                     AnimNode::End(_) => {
                         return false;
                     }
-                    AnimNode::LocalToModel(_) => {
-                        return false;
-                    }
+                    // AnimNode::LocalToModel(_) => {
+                    //     return false;
+                    // }
                     AnimNode::Sampler(val) => {
                         is_simple_edge = false;
                         let parent_outputs = self.sampler_nodes[*val]
@@ -910,8 +915,8 @@ impl AnimGraph {
                     }
                 }
             }
-            AnimNode::End(_) => {}          // Do nothing as this is the end
-            AnimNode::LocalToModel(_) => {} // This is currently left unused
+            AnimNode::End(_) => {} // Do nothing as this is the end
+            //AnimNode::LocalToModel(_) => {} // This is currently left unused
             AnimNode::Sampler(val) => {
                 self.sampler_nodes[*val].update(dt);
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
@@ -929,22 +934,54 @@ impl AnimGraph {
     fn create_anim_node_from_definition(
         &mut self,
         state_machine_graph_idx: NodeIndex,
-        state_machine_pool_idx: usize,
         definition: &AnimNodeDefinition,
+        animations_by_name: &HashMap<String, Rc<Animation>>,
     ) -> Option<NodeIndex> {
-        None
+        match definition {
+            AnimNodeDefinition::Blend(val) => {
+                let results = self.create_blend_node(
+                    val.samplers.clone(),
+                    animations_by_name,
+                    state_machine_graph_idx,
+                );
+                results
+            }
+            AnimNodeDefinition::Condition(val) => {
+                let results = self.create_condition_node(state_machine_graph_idx, val.index);
+                results
+            }
+            AnimNodeDefinition::End => {
+                println!("[AnimGraph] Warning: User gave end node as definition. Invalid.");
+                None
+            }
+            AnimNodeDefinition::LocalToModel => {
+                println!(
+                    "[AnimGraph] Warning: User gave local to model node as definition. Invalid."
+                );
+                None
+            }
+            AnimNodeDefinition::Sampler(val) => {
+                let results = self.create_sampler_node(
+                    animations_by_name[&val.animation].clone(),
+                    state_machine_graph_idx,
+                    val.speed,
+                );
+                results
+            }
+            AnimNodeDefinition::Start => {
+                println!("[AnimGraph] Warning: User gave start node as definition. Invalid.");
+                None
+            } // AnimNodeDefinition::StateMachine(val) => {}
+        }
     }
 
-    fn create_state_machine_from_definition(
-        &mut self,
-        definition: &StateMachineNodeDefinition,
-    ) -> Option<NodeIndex> {
-        None
-    }
     fn create_transition_from_definition(
         &mut self,
         definition: &TransitionNodeDefinition,
     ) -> Option<NodeIndex> {
-        None
+
+        let results = self.create_transition(definition.duration);
+
+        results
     }
 }

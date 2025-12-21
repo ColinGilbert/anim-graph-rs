@@ -13,7 +13,7 @@ pub enum AnimNode {
     Condition(usize),
     ConditionNot(usize),
     End(usize),
-    LocalToModel(usize),
+    //LocalToModel(usize),
     Sampler(usize),
     Start,
     // StateMachine(StateMachineNode),

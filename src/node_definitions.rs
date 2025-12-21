@@ -9,7 +9,7 @@ pub enum AnimNodeDefinition {
     LocalToModel,
     Sampler(SamplerNodeDefinition),
     Start,
-    StateMachine(StateMachineNodeDefinition),
+    // StateMachine(StateMachineNodeDefinition),
     // Transition(TransitionNodeDefinition),
 }
 
