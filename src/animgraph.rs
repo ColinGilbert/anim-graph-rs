@@ -437,7 +437,15 @@ impl AnimGraph {
         result
     }
 
-    pub fn create_state_machine(&mut self) -> NodeIndex {
+    pub fn get_skeleton(&self) -> Rc<Skeleton> {
+        self.skeleton.clone()
+    }
+
+    //////////////////////////////////////////////////////////
+    // This marks the end of externally-available methods
+    //////////////////////////////////////////////////////////
+    
+    fn create_state_machine(&mut self) -> NodeIndex {
         self.end_nodes.push(EndNode::new(self.skeleton.clone()));
         let end_node_idx = self.end_nodes.len() - 1;
 
