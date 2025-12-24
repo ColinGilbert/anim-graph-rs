@@ -851,7 +851,7 @@ impl AnimGraph {
                 {
                     self.state_machine_nodes[state_machine_pool_idx]
                         .trackers
-                        .insert(out.1.to());
+                        .insert(out.1.from());
                 }
             }
             _ => {
