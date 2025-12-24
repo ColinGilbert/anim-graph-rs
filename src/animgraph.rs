@@ -916,7 +916,7 @@ impl AnimGraph {
                         _ => {}
                     }
                 }
-                if end_node_reached || trackers.len() == 0 {
+                if end_node_reached || self.state_machine_nodes[state_machine_pool_idx].trackers.len() == 0 {
                     println!("FINISHED EVALUATING STATE MACHINE");
                     finished = true;
                 }
