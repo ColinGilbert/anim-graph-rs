@@ -196,7 +196,7 @@ impl AnimGraph {
                 .unwrap()
                 .weight();
 
-            println!("[AnimGraph] state machine runtime node {}", state_machine_runtime.unwrap());
+            println!("[AnimGraph] state machine runtime node {:?}", state_machine_runtime.unwrap());
 
             let state_machine_node = results
                 .graph
