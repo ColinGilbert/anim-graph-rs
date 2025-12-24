@@ -883,7 +883,7 @@ impl AnimGraph {
                     &mut next_nodes,
                 );
             }
-
+            println!("REMOVING VISITED NODES FROM TRACKERS");
             // Remove the visited nodes from the current trackers set
             self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
@@ -892,6 +892,7 @@ impl AnimGraph {
 
             // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
             for n in &next_nodes {
+                println!("ADDING NEW NODES TO TRACKERS");
                 self.state_machine_nodes[state_machine_pool_idx]
                     .trackers
                     .insert(*n);
