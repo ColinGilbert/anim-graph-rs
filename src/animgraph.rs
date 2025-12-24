@@ -134,6 +134,7 @@ impl AnimGraph {
                         .insert(edge_define.to(), state_machine_runtime.unwrap());
                     state_machines_to_evaluate.push(edge_define.to());
                 } else {
+                    println!("[AnimGraph] Got the edge");
                     state_machine_runtime = state_machine_defines_to_runtimes
                         .get(&edge_define.to())
                         .copied();
@@ -196,7 +197,7 @@ impl AnimGraph {
                 .unwrap()
                 .weight();
 
-            println!("[AnimGraph] state machine runtime node {:?}", state_machine_runtime.unwrap());
+            // println!("[AnimGraph] state machine runtime node {:?}", state_machine_runtime.unwrap());
 
             let state_machine_node = results
                 .graph
