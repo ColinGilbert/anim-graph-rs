@@ -339,14 +339,11 @@ impl AnimGraph {
                     current_state_machine_idx_define = *val;
                     state_machines_to_evaluate.pop();
                 }
-                None => {}
+                None => {
+                    finished = true;
+                    println!("FINISHING ANIM GRAPH CONSTRUCTION");
+                }
             }
-
-            if state_machines_to_evaluate.len() == 0 {
-                println!("FINISHING ANIM GRAPH CONSTRUCTION");
-                finished = true;
-            }
-            println!("Running anim graph construction");
         }
 
         // Finally, setup the root node
