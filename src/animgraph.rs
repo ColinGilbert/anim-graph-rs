@@ -898,7 +898,7 @@ impl AnimGraph {
                     *n,
                     dt,
                     &mut next_nodes,
-                    final_output
+                    final_output,
                 );
             }
 
@@ -992,7 +992,6 @@ impl AnimGraph {
             AnimNode::End(val) => {
                 // self.state_machine_nodes[state_machine_pool_idx].output =
                 //     self.end_nodes[*val].output.clone();
-
             } // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 self.sampler_nodes[*sampler_val].update(dt);
@@ -1014,7 +1013,14 @@ impl AnimGraph {
                                 .unwrap()
                                 .clone();
                             if final_output {
-                                self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
+                                // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
+                                self.output_node.l2m_job.set_input(
+                                    self.sampler_nodes[*sampler_val]
+                                        .sample_job
+                                        .output()
+                                        .unwrap()
+                                        .clone(),
+                                );
                             }
                         }
                         _ => {}
