@@ -104,11 +104,11 @@ impl AnimGraph {
             }
         }
         let root_state_machine_idx_define = definition.root.unwrap();
-        let root_state_machine_idx_runtime = results.root.unwrap();
-        state_machine_defines_to_runtimes.insert(
-            root_state_machine_idx_define,
-            root_state_machine_idx_runtime,
-        );
+        // let root_state_machine_idx_runtime = results.root.unwrap();
+        // state_machine_defines_to_runtimes.insert(
+        //     root_state_machine_idx_define,
+        //     root_state_machine_idx_runtime,
+        // );
 
         // We clear these on each state machine iteration
         let mut anim_node_defines_to_runtimes = HashMap::<NodeIndex, NodeIndex>::new();
@@ -134,7 +134,9 @@ impl AnimGraph {
 
                     state_machine_runtimes_to_defines
                         .insert(state_machine_runtime.unwrap(), edge_define.to());
+                    state_machine_defines_to_runtimes.insert(edge_define.to(), state_machine_runtime.unwrap());
                     state_machines_to_evaluate.push(edge_define.to());
+
                 }
 
                 if !transition_defines_to_runtimes.contains_key(&edge_idx) {
