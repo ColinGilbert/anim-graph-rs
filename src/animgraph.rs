@@ -253,7 +253,7 @@ impl AnimGraph {
                                 .create_anim_node_from_definition(
                                     state_machine_runtime.unwrap(),
                                     // state_machine_pool_idx,
-                                    anim_node_definition.unwrap().weight(),
+                                    anim_node_definition,
                                     animations_by_name,
                                 );
 
