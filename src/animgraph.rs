@@ -883,7 +883,7 @@ impl AnimGraph {
                     &mut next_nodes,
                 );
             }
-            println!("REMOVING VISITED NODES FROM TRACKERS");
+            //println!("REMOVING VISITED NODES FROM TRACKERS");
             // Remove the visited nodes from the current trackers set
             self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
@@ -991,7 +991,15 @@ impl AnimGraph {
                     next_nodes.insert(to);
                 }
             }
-            AnimNode::Start => {} // Handling the Start node is done in evaluate_state_machine
+            AnimNode::Start => {
+                for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
+                    .graph
+                    .outputs(anim_node_idx)
+                {
+                    let to = edge.to();
+                    next_nodes.insert(to);
+                }
+            }
         }
     }
 
