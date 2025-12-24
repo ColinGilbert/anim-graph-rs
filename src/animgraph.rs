@@ -130,6 +130,7 @@ impl AnimGraph {
             for (edge_idx, edge_define) in
                 definition.graph.outputs(current_state_machine_idx_define)
             {
+                println!("EDGE IDX {:?}", edge_idx);
                 //state_machine_runtime = None;
                 if !state_machine_defines_to_runtimes.contains_key(&edge_define.to()) {
                     println!("CREATE STATE MACHINE FROM EDGE TO()");
