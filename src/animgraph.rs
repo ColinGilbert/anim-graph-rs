@@ -674,24 +674,24 @@ impl AnimGraph {
             AnimNode::Start => {
                 return false;
             }
-            AnimNode::End(end_node_val) => {
-                match parent {
-                    AnimNode::Blend(blend_node_val) => {
-                        self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
-                            .blend_job
-                            .output()
-                            .unwrap()
-                            .clone()
-                    }
-                    AnimNode::Sampler(sampler_node_val) => {
-                        self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
-                            .sample_job
-                            .output()
-                            .unwrap()
-                            .clone()
-                    }
-                    _ => {}
-                }
+            AnimNode::End(_end_node_val) => {
+                // match parent {
+                //     AnimNode::Blend(blend_node_val) => {
+                //         self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
+                //             .blend_job
+                //             .output()
+                //             .unwrap()
+                //             .clone()
+                //     }
+                //     AnimNode::Sampler(sampler_node_val) => {
+                //         self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
+                //             .sample_job
+                //             .output()
+                //             .unwrap()
+                //             .clone()
+                //     }
+                //     _ => {}
+                // }
             }
             _ => {}
         }
@@ -710,6 +710,7 @@ impl AnimGraph {
         let node_results = self.graph.node(node_idx).unwrap().weight();
         match node_results {
             AnimGraphNode::StateMachine(val) => {
+                println!("EVALUATE STATE MACHINE");
                 self.evaluate_state_machine(node_idx, *val, dt, true);
             }
             AnimGraphNode::Transition(val) => {
