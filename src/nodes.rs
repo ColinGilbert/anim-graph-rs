@@ -259,13 +259,16 @@ impl LocalToModelNode {
     pub fn new(skeleton: Rc<Skeleton>) -> Self {
         let mut l2m_job = LocalToModelJobRc::default();
         let models = Rc::new(RefCell::new(vec![
-            glam::Mat4::default();
+            glam::Mat4::IDENTITY;
             skeleton.num_joints()
         ]));
 
         l2m_job.set_skeleton(skeleton.clone());
         l2m_job.set_output(models.clone());
-        
+
+        let results = l2m_job.validate();
+        println!("CREATING LOCAL TO MODEL NODE: VALID: {}", results);
+
         Self { l2m_job, models }
     }
 
