@@ -691,7 +691,7 @@ impl AnimGraph {
         let node_results = self.graph.node(node_idx).unwrap().weight();
         match node_results {
             AnimGraphNode::StateMachine(val) => {
-                self.evaluate_state_machine(node_idx, *val, dt);
+                self.evaluate_state_machine(node_idx, *val, dt, true);
             }
             AnimGraphNode::Transition(val) => {
                 self.evaluate_transition(*val, node_idx, dt);
@@ -747,7 +747,7 @@ impl AnimGraph {
         }
 
         if evaluate {
-            self.evaluate_state_machine(from, state_machine_pool_idx, dt);
+            self.evaluate_state_machine(from, state_machine_pool_idx, dt, false);
         } else {
             println!("[AnimGraph] Warning: No \"from\" node present.");
             return;
@@ -785,7 +785,7 @@ impl AnimGraph {
         }
 
         if evaluate {
-            self.evaluate_state_machine(to, state_machine_pool_idx, dt);
+            self.evaluate_state_machine(to, state_machine_pool_idx, dt, false);
         } else {
             println!("[AnimGraph] Warning: No \"to\" node present.");
             return;
@@ -836,7 +836,15 @@ impl AnimGraph {
         state_machine_graph_idx: NodeIndex,
         state_machine_pool_idx: usize,
         dt: web_time::Duration,
+        final_output: bool,
     ) {
+        if final_output {
+            self.output_node.l2m_job.set_input(
+                self.state_machine_nodes[state_machine_pool_idx]
+                    .output
+                    .clone(),
+            );
+        }
         let start = self.state_machine_nodes[state_machine_pool_idx]
             .graph
             .node(self.state_machine_nodes[state_machine_pool_idx].start)
@@ -905,25 +913,29 @@ impl AnimGraph {
 
             let mut end_node_reached = false;
 
-            if self.state_machine_nodes[state_machine_pool_idx].trackers.len() == 0 {
+            if self.state_machine_nodes[state_machine_pool_idx]
+                .trackers
+                .len()
+                == 0
+            {
                 println!("ONLY ONE NODE LEFT");
-                                    finished = true;
+                finished = true;
             }
-                // for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
-                //     let anim_node = self.state_machine_nodes[state_machine_pool_idx]
-                //         .graph
-                //         .node(*n)
-                //         .unwrap()
-                //         .weight();
-                //     match anim_node {
-                //         AnimNode::End(_) => end_node_reached = true,
-                //         _ => {}
-                //     }
-                // }
-                // if end_node_reached {
-                //     println!("FINISHED EVALUATING STATE MACHINE");
-                //     finished = true;
-                // }
+            // for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
+            //     let anim_node = self.state_machine_nodes[state_machine_pool_idx]
+            //         .graph
+            //         .node(*n)
+            //         .unwrap()
+            //         .weight();
+            //     match anim_node {
+            //         AnimNode::End(_) => end_node_reached = true,
+            //         _ => {}
+            //     }
+            // }
+            // if end_node_reached {
+            //     println!("FINISHED EVALUATING STATE MACHINE");
+            //     finished = true;
+            // }
             // }
         }
     }
