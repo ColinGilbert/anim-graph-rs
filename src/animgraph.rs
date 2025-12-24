@@ -366,7 +366,7 @@ impl AnimGraph {
     }
 
     pub fn get_output(&mut self, output: &mut Vec<glam::Mat4>) {
-        output.clear();
+        // output.clear();
         self.output_node.l2m_job.run().unwrap();
         for m in self.output_node.models.borrow().iter() {
             output.push(*m);
@@ -986,7 +986,6 @@ impl AnimGraph {
                 }
             }
             AnimNode::End(val) => {
-                self.state_machine_nodes[state_machine_pool_idx].output = self.end_nodes[*val].output.clone();
             } // Do nothing as this is the end
             AnimNode::Sampler(val) => {
                 self.sampler_nodes[*val].update(dt);
