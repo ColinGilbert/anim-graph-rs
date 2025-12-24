@@ -1033,11 +1033,11 @@ impl AnimGraph {
                     match next {
                         AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
-                            self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
-                                .sample_job
-                                .output()
-                                .unwrap()
-                                .clone();
+                            // self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
+                            //     .sample_job
+                            //     .output()
+                            //     .unwrap()
+                            //     .clone();
                             // self.sampler_nodes[*sampler_val].update(dt);
                             if final_output {
                                 // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
