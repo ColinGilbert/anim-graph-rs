@@ -716,7 +716,7 @@ impl AnimGraph {
         transition_pool_idx: usize,
         dt: web_time::Duration,
     ) {
-        self.output_node.l2m_job.set_input(
+        self.output_node.set_input(
             self.transition_nodes[transition_pool_idx]
                 .blend
                 .blend_job
@@ -919,7 +919,7 @@ impl AnimGraph {
         }
 
         // if final_output {
-        //     self.output_node.l2m_job.set_input(
+        //     self.output_node.set_input(
         //         self.state_machine_nodes[state_machine_pool_idx]
         //             .output
         //             .clone(),
@@ -1006,7 +1006,7 @@ impl AnimGraph {
                             // self.sampler_nodes[*sampler_val].update(dt);
                             if final_output {
                                 // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
-                                self.output_node.l2m_job.set_input(
+                                self.output_node.set_input(
                                     self.sampler_nodes[*sampler_val]
                                         .sample_job
                                         .output()
