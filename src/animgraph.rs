@@ -117,14 +117,14 @@ impl AnimGraph {
             .insert(current_state_machine_idx_define, root_node_runtime_idx);
         state_machine_runtimes_to_defines
             .insert(root_node_runtime_idx, current_state_machine_idx_define);
-
+        
+        let mut state_machine_runtime: Option<NodeIndex> = Some(root_node_runtime_idx);
         let mut finished = false;
         let mut state_machines_to_evaluate = Vec::<NodeIndex>::new();
         let mut anim_nodes_to_evaluate = Vec::<NodeIndex>::new();
 
         while !finished {
             println!("ITERATING");
-            let mut state_machine_runtime: Option<NodeIndex> = None;
             for (edge_idx, edge_define) in
                 definition.graph.outputs(current_state_machine_idx_define)
             {
@@ -224,7 +224,7 @@ impl AnimGraph {
                 AnimGraphNode::Transition(_) => {
                     // WTF?
                     println!(
-                        "[AnimGraph] Transition found where state machine was expected, from definition."
+                        "[AnimGraph] Transition definitinon found where state machine definition was expected"
                     );
                     return None;
                 }
