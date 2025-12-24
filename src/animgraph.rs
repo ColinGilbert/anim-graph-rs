@@ -883,7 +883,7 @@ impl AnimGraph {
                     &mut next_nodes,
                 );
             }
-            //println!("REMOVING VISITED NODES FROM TRACKERS");
+            println!("REMOVING VISITED NODES FROM TRACKERS");
             // Remove the visited nodes from the current trackers set
             self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
