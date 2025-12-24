@@ -1006,6 +1006,7 @@ impl AnimGraph {
                             // self.sampler_nodes[*sampler_val].update(dt);
                             if final_output {
                                 // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
+                                self.sampler_nodes[*sampler_val].update(dt);
                                 self.output_node.set_input(
                                     self.sampler_nodes[*sampler_val]
                                         .sample_job
@@ -1014,7 +1015,6 @@ impl AnimGraph {
                                         .clone(),
                                 );
                             }
-                            self.sampler_nodes[*sampler_val].update(dt);
 
                             return;
                         }
