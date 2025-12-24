@@ -253,7 +253,6 @@ impl AnimGraph {
                         Some(_) => {}
                         None => {
                             println!("[AnimGraph] Could not add anim node from definition.");
-                            return None;
                         }
                     }
 
