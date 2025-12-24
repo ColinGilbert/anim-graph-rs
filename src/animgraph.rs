@@ -864,7 +864,7 @@ impl AnimGraph {
         let mut next_nodes = HashSet::<NodeIndex>::new();
         while !finished {
             // For each node...
-
+            println!("EVALUATING STATE MACHINE");
             // Evaluate the current node and obtain the next set of nodes to track
             for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
                 nodes_to_evaluate.push(*n);
