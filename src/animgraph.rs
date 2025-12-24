@@ -245,6 +245,7 @@ impl AnimGraph {
 
                 match anim_node_definition {
                     AnimNodeDefinition::Start => {}
+                    AnimNodeDefinition::End => {}
                     _ => {
                         if !anim_node_defines_to_runtimes
                             .contains_key(&anim_node_definition_graph_idx)
