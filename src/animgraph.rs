@@ -213,14 +213,16 @@ impl AnimGraph {
                 }
             }
 
-            let state_machine_node = results
+            let state_machine_node_runtime = results
                 .graph
                 .node(state_machine_runtime.unwrap())
                 .unwrap()
                 .weight();
-
-            match state_machine_node {
-                AnimGraphNode::StateMachine(_) => {}
+            let mut state_machine_pool_idx = 0;
+            match state_machine_node_runtime {
+                AnimGraphNode::StateMachine(val) => {
+                    state_machine_pool_idx = *val;
+                }
                 AnimGraphNode::Transition(_) => {
                     // WTF?
                     println!(
@@ -244,8 +246,18 @@ impl AnimGraph {
                     .weight();
 
                 match anim_node_definition {
-                    AnimNodeDefinition::Start => {}
-                    AnimNodeDefinition::End => {}
+                    AnimNodeDefinition::Start => {
+                        anim_node_defines_to_runtimes.insert(
+                            anim_node_definition_graph_idx,
+                            results.state_machine_nodes[state_machine_pool_idx].start,
+                        );
+                    }
+                    AnimNodeDefinition::End => {
+                        anim_node_defines_to_runtimes.insert(
+                            anim_node_definition_graph_idx,
+                            results.state_machine_nodes[state_machine_pool_idx].end,
+                        );
+                    }
                     _ => {
                         if !anim_node_defines_to_runtimes
                             .contains_key(&anim_node_definition_graph_idx)
