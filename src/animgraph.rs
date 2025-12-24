@@ -374,7 +374,7 @@ impl AnimGraph {
                 }
             }
             Err(val) => {
-                println!("[AnimGraph] Couldn't run job, {}", val);
+                println!("[AnimGraph] Couldn't run l2m job: {}", val);
             }
         }
     }
@@ -721,15 +721,15 @@ impl AnimGraph {
                 self.evaluate_state_machine(node_idx, *val, dt, true);
             }
             AnimGraphNode::Transition(val) => {
-                self.evaluate_transition(*val, node_idx, dt);
+                self.evaluate_transition(node_idx, *val, dt);
             }
         }
     }
 
     fn evaluate_transition(
         &mut self,
-        transition_pool_idx: usize,
         transition_graph_idx: NodeIndex,
+        transition_pool_idx: usize,
         dt: web_time::Duration,
     ) {
         self.output_node.l2m_job.set_input(
@@ -1018,6 +1018,7 @@ impl AnimGraph {
                                 .output()
                                 .unwrap()
                                 .clone();
+
                             if final_output {
                                 // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
                                 self.output_node.l2m_job.set_input(
@@ -1028,6 +1029,7 @@ impl AnimGraph {
                                         .clone(),
                                 );
                             }
+                            break;
                         }
                         _ => {
                             next_nodes.insert(to);
