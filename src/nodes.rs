@@ -258,14 +258,12 @@ pub struct LocalToModelNode {
 impl LocalToModelNode {
     pub fn new(skeleton: Rc<Skeleton>) -> Self {
         let mut l2m_job = LocalToModelJobRc::default();
+        l2m_job.set_skeleton(skeleton.clone());
         let models = Rc::new(RefCell::new(vec![
             glam::Mat4::IDENTITY;
             skeleton.num_joints()
-        ]));
-
-        l2m_job.set_skeleton(skeleton.clone());
+            ]));
         l2m_job.set_output(models.clone());
-
 
         Self { l2m_job, models }
     }
