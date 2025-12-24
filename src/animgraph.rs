@@ -1014,8 +1014,9 @@ impl AnimGraph {
                                         .clone(),
                                 );
                             }
+                            self.sampler_nodes[*sampler_val].update(dt);
 
-                            // return;
+                            return;
                         }
                         _ => {
                             next_nodes.insert(to);
