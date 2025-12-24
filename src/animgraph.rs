@@ -995,7 +995,7 @@ impl AnimGraph {
                         .node(to)
                         .unwrap()
                         .weight();
-
+                    println!("SAMPLER EVAL");
                     match next {
                         AnimNode::End(end_val) => {
                             self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
