@@ -131,7 +131,7 @@ impl AnimGraph {
                 println!("EDGE IDX {:?}", edge_idx);
                 //state_machine_runtime = None;
                 if !state_machine_defines_to_runtimes.contains_key(&edge_define.to()) {
-                    println!("CREATE STATE MACHINE FROM EDGE TO()");
+                    println!("CREATING CHILD STATE MACHINE FROM EDGE TO()");
                     state_machine_runtime = Some(results.create_state_machine());
 
                     state_machine_runtimes_to_defines
@@ -140,7 +140,7 @@ impl AnimGraph {
                         .insert(edge_define.to(), state_machine_runtime.unwrap());
                     state_machines_to_evaluate.push(edge_define.to());
                 } else {
-                    println!("[AnimGraph] Got the state machine");
+                    println!("GOT THE STATE MACHINE ALREADY");
                     state_machine_runtime = state_machine_defines_to_runtimes
                         .get(&edge_define.to())
                         .copied();
@@ -195,7 +195,7 @@ impl AnimGraph {
                     }
                 }
             }
-
+            println!("NOW DOING THE ANIM NODES");
             // Now we do the anim nodes and connections of the state machine
             let state_machine_definition = definition
                 .graph
