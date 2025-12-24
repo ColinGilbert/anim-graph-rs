@@ -994,7 +994,6 @@ impl AnimGraph {
                 //     self.end_nodes[*val].output.clone();
             } // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
-                self.sampler_nodes[*sampler_val].update(dt);
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
                     .outputs(anim_node_idx)
@@ -1028,6 +1027,7 @@ impl AnimGraph {
                         }
                     }
                 }
+                self.sampler_nodes[*sampler_val].update(dt);
             }
             // Start node is handled in evaluate_state_machine
             AnimNode::Start => {}
