@@ -932,7 +932,7 @@ impl AnimGraph {
             .unwrap()
             .weight();
 
-            println!("Evaluating anim node");
+            println!("Evaluating anim node {:?}", anim_node_idx);
 
         match anim_node {
             AnimNode::Blend(val) => {
