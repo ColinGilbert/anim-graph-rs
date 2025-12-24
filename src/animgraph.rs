@@ -710,7 +710,7 @@ impl AnimGraph {
         let node_results = self.graph.node(node_idx).unwrap().weight();
         match node_results {
             AnimGraphNode::StateMachine(val) => {
-                println!("EVALUATE STATE MACHINE");
+                // println!("EVALUATE STATE MACHINE");
                 self.evaluate_state_machine(node_idx, *val, dt, true);
             }
             AnimGraphNode::Transition(val) => {
@@ -990,8 +990,9 @@ impl AnimGraph {
                 }
             }
             AnimNode::End(val) => {
-                self.state_machine_nodes[state_machine_pool_idx].output =
-                    self.end_nodes[*val].output.clone();
+                // self.state_machine_nodes[state_machine_pool_idx].output =
+                //     self.end_nodes[*val].output.clone();
+
             } // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 self.sampler_nodes[*sampler_val].update(dt);
