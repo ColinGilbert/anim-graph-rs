@@ -72,6 +72,7 @@ impl AnimGraph {
         definition: &AnimGraphDefinition,
         animations_by_name: &HashMap<String, Rc<Animation>>,
     ) -> Option<Self> {
+        println!("CREATE ANIM GRAPH FROM DEFINITION");
         let mut results = AnimGraph::new(skeleton);
 
         //  Do the params
@@ -124,6 +125,7 @@ impl AnimGraph {
         let mut anim_nodes_to_evaluate = Vec::<NodeIndex>::new();
 
         while !finished {
+            println!("ITERATING");
             let mut state_machine_runtime: Option<NodeIndex> = None;
             for (edge_idx, edge_define) in
                 definition.graph.outputs(current_state_machine_idx_define)
@@ -287,7 +289,7 @@ impl AnimGraph {
             }
 
             println!("ADDING EDGES BETWEEN ANIM NODES");
-            
+
             // We add the edges between the anim nodes.
             let mut state_machine_finished_adding_edges = false;
             let mut current_anim_node_definition = definition.root.unwrap(); // This is a temporary value that is guaranteed to change to a valid one. Did this so the compiler would let me do this without using an Option
