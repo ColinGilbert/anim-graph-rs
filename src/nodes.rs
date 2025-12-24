@@ -262,7 +262,7 @@ impl LocalToModelNode {
         let models = Rc::new(RefCell::new(vec![
             glam::Mat4::IDENTITY;
             skeleton.num_joints()
-            ]));
+        ]));
         l2m_job.set_output(models.clone());
 
         Self { l2m_job, models }
@@ -270,8 +270,13 @@ impl LocalToModelNode {
 
     pub fn set_input(&mut self, locals: Rc<RefCell<Vec<SoaTransform>>>) {
         self.l2m_job.set_input(locals.clone());
-        let results = self.l2m_job.validate();
-        println!("LOCAL TO MODEL NODE SET INPUT. VALID: {}", results);
+        let models = Rc::new(RefCell::new(vec![
+            glam::Mat4::IDENTITY;
+            skeleton.num_joints()
+        ]));
+        self.l2m_job.set_output(models.clone());
+        //let results = self.l2m_job.validate();
+        //println!("LOCAL TO MODEL NODE SET INPUT. VALID: {}", results);
     }
 }
 
