@@ -343,7 +343,7 @@ pub struct StateMachineNode {
     pub graph: SlotMapGraph<AnimNode, AnimEdge>,
     pub start: NodeIndex,
     pub end: NodeIndex,
-    pub active_node: NodeIndex,
+    //pub active_node: NodeIndex,
     pub output: Rc<RefCell<Vec<SoaTransform>>>,
     pub trackers:HashSet<NodeIndex>
 }
@@ -359,7 +359,7 @@ impl StateMachineNode {
             graph: SlotMapGraph::<AnimNode, AnimEdge>::default(),
             start: start_idx,
             end: end_idx,
-            active_node: start_idx,
+            //active_node: start_idx,
             output: Rc::new(RefCell::new(Vec::new())),
             trackers
         }

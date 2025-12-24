@@ -904,8 +904,11 @@ impl AnimGraph {
                 .trackers
                 .len()
                 == 1;
+
             let mut end_node_reached = false;
+            
             if only_one_node_left {
+                println!("ONLY ONE NODE LEFT");
                 for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
                     let anim_node = self.state_machine_nodes[state_machine_pool_idx]
                         .graph
@@ -913,7 +916,7 @@ impl AnimGraph {
                         .unwrap()
                         .weight();
                     match anim_node {
-                        AnimNode::End(_) => end_node_reached = true,
+                        AnimNode::End(_) => { end_node_reached = true},
                         _ => {}
                     }
                 }
