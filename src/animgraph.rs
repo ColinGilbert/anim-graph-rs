@@ -96,6 +96,13 @@ impl AnimGraph {
 
         // We now extract the definitions graph and turn it into an animgraph...
 
+        match definition.root {
+            Some(_) => {}
+            None => {
+                println!("[AnimGraph] Could not get root node definition.")
+                return None
+            }
+        }
         let root_state_machine_idx_define = definition.root.unwrap();
         let root_state_machine_idx_runtime = results.root.unwrap();
         state_machine_defines_to_runtimes.insert(
