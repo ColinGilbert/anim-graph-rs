@@ -72,7 +72,7 @@ impl AnimGraph {
         definition: &AnimGraphDefinition,
         animations_by_name: &HashMap<String, Rc<Animation>>,
     ) -> Option<Self> {
-        println!("CREATE ANIM GRAPH FROM DEFINITION");
+        // println!("CREATE ANIM GRAPH FROM DEFINITION");
         let mut results = AnimGraph::new(skeleton);
 
         //  Do the params
@@ -132,6 +132,7 @@ impl AnimGraph {
             {
                 //state_machine_runtime = None;
                 if !state_machine_defines_to_runtimes.contains_key(&edge_define.to()) {
+                    println!("CREATE STATE MACHINE FROM EDGE TO()");
                     state_machine_runtime = Some(results.create_state_machine());
 
                     state_machine_runtimes_to_defines
