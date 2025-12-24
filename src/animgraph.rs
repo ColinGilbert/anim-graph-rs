@@ -566,7 +566,7 @@ impl AnimGraph {
             }
 
             AnimGraphNode::Transition(_) => {
-                println!("Tried to create a sampler node as a child of a transition. Invalid.");
+                println!("Tried to create a sampler node as a child of a transition, which is invalid.");
                 None
             }
         }
@@ -577,7 +577,6 @@ impl AnimGraph {
         samplers: Vec<String>,
         animations_by_name: &HashMap<String, Rc<Animation>>,
         state_machine_idx: NodeIndex,
-        // parent_node: NodeIndex,
     ) -> Option<NodeIndex> {
         let mut animations = Vec::<Rc<Animation>>::new();
         for s in samplers {
@@ -592,11 +591,6 @@ impl AnimGraph {
                 let new_node = self.state_machine_nodes[*val]
                     .graph
                     .add_node(AnimNode::Blend(node_idx));
-
-                // let _ = self.state_machine_nodes[*val]
-                //     .graph
-                //     .add_edge(AnimEdge::Simple, parent_node, new_node)
-                //     .unwrap();
 
                 Some(new_node)
             }
@@ -1031,7 +1025,7 @@ impl AnimGraph {
                         .weight();
 
                     match next {
-                        AnimNode::End(end_val) => {
+                        AnimNode::End(_end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
                             // self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
                             //     .sample_job
@@ -1050,13 +1044,14 @@ impl AnimGraph {
                                         .clone(),
                                 );
                             }
+                            break;
                         }
                         _ => {
                             next_nodes.insert(to);
                         }
                     }
-                    self.sampler_nodes[*sampler_val].update(dt);
                 }
+                self.sampler_nodes[*sampler_val].update(dt);
             }
             // Start node is handled in evaluate_state_machine
             AnimNode::Start => {
@@ -1066,11 +1061,6 @@ impl AnimGraph {
                     .outputs(anim_node_graph_idx)
                 {
                     let to = edge.to();
-                    // let next = self.state_machine_nodes[state_machine_pool_idx]
-                    //     .graph
-                    //     .node(to)
-                    //     .unwrap()
-                    //     .weight();
                     next_nodes.insert(to);
                 }
             }
