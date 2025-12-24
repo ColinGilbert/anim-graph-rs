@@ -373,7 +373,7 @@ impl AnimGraph {
                     output.push(*m);
                 }
             }
-            Err(val) => {
+            Err(_val) => {
                 //println!("[AnimGraph] Couldn't run l2m job: {}", val);
             }
         }
@@ -535,11 +535,6 @@ impl AnimGraph {
                     .graph
                     .add_node(AnimNode::Sampler(sampler_node_idx));
 
-                // let _ = self.state_machine_nodes[*val]
-                //     .graph
-                //     .add_edge(AnimEdge::Simple, parent_node, new_node)
-                //     .unwrap();
-
                 Some(new_node)
             }
 
@@ -601,11 +596,6 @@ impl AnimGraph {
             }
         }
     }
-    //     // fn create_end_node(state_machine_graph_idx: NodeIndex) -> Option<NodeIndex> {}
-    // fn create_sampler_node(state_machine_graph_idx: NodeIndex, animation: String, speed: f32) -> Option<NodeIndex> {
-
-    //     None
-    // }
 
     // Returns success status
     fn connect_anim_nodes(
@@ -643,9 +633,6 @@ impl AnimGraph {
                     AnimNode::End(_) => {
                         return false;
                     }
-                    // AnimNode::LocalToModel(_) => {
-                    //     return false;
-                    // }
                     AnimNode::Sampler(val) => {
                         is_simple_edge = false;
                         let parent_outputs = self.sampler_nodes[*val]
@@ -1019,6 +1006,7 @@ impl AnimGraph {
                                 .unwrap()
                                 .clone();
 
+                            self.sampler_nodes[*sampler_val].update(dt);
                             if final_output {
                                 // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
                                 self.output_node.l2m_job.set_input(
@@ -1029,7 +1017,6 @@ impl AnimGraph {
                                         .clone(),
                                 );
                             }
-                            self.sampler_nodes[*sampler_val].update(dt);
 
                             return;
                         }
