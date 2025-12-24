@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::collections::btree_map::Values;
 use std::rc::Rc;
 
 use mapgraph::map::slotmap::EdgeIndex;
@@ -933,7 +932,7 @@ impl AnimGraph {
         &mut self,
         state_machine_pool_idx: usize,
         #[allow(unused)] state_machine_graph_idx: NodeIndex,
-        anim_node_idx: NodeIndex,
+        anim_node_graph_idx: NodeIndex,
         dt: web_time::Duration,
         next_nodes: &mut HashSet<NodeIndex>,
         final_output: bool,
@@ -941,7 +940,7 @@ impl AnimGraph {
         // For each anim node type, update them accordingly
         let anim_node = self.state_machine_nodes[state_machine_pool_idx]
             .graph
-            .node(anim_node_idx)
+            .node(anim_node_graph_idx)
             .unwrap()
             .weight();
 
@@ -952,7 +951,7 @@ impl AnimGraph {
                 self.blend_nodes[*val].update(dt);
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
-                    .outputs(anim_node_idx)
+                    .outputs(anim_node_graph_idx)
                 {
                     let to = edge.to();
                     next_nodes.insert(to);
@@ -962,7 +961,7 @@ impl AnimGraph {
                 if self.bools[*val] {
                     for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                         .graph
-                        .outputs(anim_node_idx)
+                        .outputs(anim_node_graph_idx)
                     {
                         let to = edge.to();
                         next_nodes.insert(to);
@@ -973,23 +972,24 @@ impl AnimGraph {
                 if !self.bools[*val] {
                     for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                         .graph
-                        .outputs(anim_node_idx)
+                        .outputs(anim_node_graph_idx)
                     {
                         let to = edge.to();
                         next_nodes.insert(to);
                     }
                 }
             }
-            AnimNode::End(val) => {
+            AnimNode::End(_val) => {
                 // self.state_machine_nodes[state_machine_pool_idx].output =
                 //     self.end_nodes[*val].output.clone();
             } // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 self.sampler_nodes[*sampler_val].update(dt);
+                println!("SAMPLER EVAL");
 
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
-                    .outputs(anim_node_idx)
+                    .outputs(anim_node_graph_idx)
                 {
                     let to = edge.to();
                     let next = self.state_machine_nodes[state_machine_pool_idx]
@@ -997,7 +997,6 @@ impl AnimGraph {
                         .node(to)
                         .unwrap()
                         .weight();
-                    println!("SAMPLER EVAL");
                     match next {
                         AnimNode::End(end_val) => {
                             self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
