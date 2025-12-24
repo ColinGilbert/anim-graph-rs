@@ -87,7 +87,6 @@ impl AnimGraph {
         results.vec3s = definition.vec3s.clone();
         results.vec3_names = definition.vec3_names.clone();
 
-
         // Make sure to keep a map of nodes belonging to both graphs for quick reference, as indices are not stable.
         let mut state_machine_defines_to_runtimes = HashMap::<NodeIndex, NodeIndex>::new();
         let mut transition_defines_to_runtimes = HashMap::<EdgeIndex, NodeIndex>::new();
@@ -100,7 +99,7 @@ impl AnimGraph {
             Some(_) => {}
             None => {
                 println!("[AnimGraph] Could not get root node definition.");
-                return None
+                return None;
             }
         }
         let root_state_machine_idx_define = definition.root.unwrap();
@@ -112,9 +111,7 @@ impl AnimGraph {
 
         // We clear these on each state machine iteration
         let mut anim_node_defines_to_runtimes = HashMap::<NodeIndex, NodeIndex>::new();
-        // let mut anim_edges_defines_to_runtimes = HashMap::<NodeIndex, NodeIndex>::new();
         let mut anim_node_runtimes_to_defines = HashMap::<NodeIndex, NodeIndex>::new();
-        // let mut anim_edges_runtimes_to_defines = HashMap::<NodeIndex, NodeIndex>::new();
 
         // Iterate over state machines and transitions of the definition graph and add corresponding ones to the anim graph.
         let mut current_state_machine_idx_define = root_state_machine_idx_define;
@@ -127,18 +124,19 @@ impl AnimGraph {
             for (edge_idx, edge_define) in
                 definition.graph.outputs(current_state_machine_idx_define)
             {
+                //state_machine_runtime = None;
                 if !state_machine_defines_to_runtimes.contains_key(&edge_define.to()) {
-                    // let state_machine_define_graph_node =
-                    //     definition.graph.node(edge_define.to()).unwrap();
                     state_machine_runtime = Some(results.create_state_machine());
 
                     state_machine_runtimes_to_defines
                         .insert(state_machine_runtime.unwrap(), edge_define.to());
-                    state_machine_defines_to_runtimes.insert(edge_define.to(), state_machine_runtime.unwrap());
+                    state_machine_defines_to_runtimes
+                        .insert(edge_define.to(), state_machine_runtime.unwrap());
                     state_machines_to_evaluate.push(edge_define.to());
-
                 } else {
-                    state_machine_runtime = state_machine_defines_to_runtimes.get(&edge_define.to()).copied();
+                    state_machine_runtime = state_machine_defines_to_runtimes
+                        .get(&edge_define.to())
+                        .copied();
                 }
 
                 if !transition_defines_to_runtimes.contains_key(&edge_idx) {
@@ -205,8 +203,7 @@ impl AnimGraph {
                 .weight();
 
             match state_machine_node {
-                AnimGraphNode::StateMachine(_) => {
-                }
+                AnimGraphNode::StateMachine(_) => {}
                 AnimGraphNode::Transition(_) => {
                     // WTF?
                     println!(
@@ -338,7 +335,6 @@ impl AnimGraph {
                 let root_node = state_machine_defines_to_runtimes[&val];
                 results.root = Some(root_node);
                 results.current_node = Some(root_node);
-
             }
 
             None => {
@@ -455,15 +451,17 @@ impl AnimGraph {
     //////////////////////////////////////////////////////////
     // This marks the end of externally-available methods
     //////////////////////////////////////////////////////////
-    
+
     fn create_state_machine(&mut self) -> NodeIndex {
         self.end_nodes.push(EndNode::new(self.skeleton.clone()));
         let end_node_idx = self.end_nodes.len() - 1;
 
-        self.state_machine_nodes.push(StateMachineNode::new(end_node_idx));
+        self.state_machine_nodes
+            .push(StateMachineNode::new(end_node_idx));
         let state_machine_idx = self.state_machine_nodes.len() - 1;
 
-        self.state_machine_nodes[state_machine_idx].output = self.end_nodes[end_node_idx].output.clone();
+        self.state_machine_nodes[state_machine_idx].output =
+            self.end_nodes[end_node_idx].output.clone();
 
         let result = self
             .graph
@@ -472,10 +470,7 @@ impl AnimGraph {
     }
 
     // Returns success status
-    fn create_transition(
-        &mut self,
-        duration: f32,
-    ) -> Option<NodeIndex> {
+    fn create_transition(&mut self, duration: f32) -> Option<NodeIndex> {
         let transition = TransitionNode::new(self.skeleton.clone(), duration);
         self.transition_nodes.push(transition);
         let transition_node_pool_idx = self.transition_nodes.len() - 1;
@@ -1011,7 +1006,6 @@ impl AnimGraph {
         &mut self,
         definition: &TransitionNodeDefinition,
     ) -> Option<NodeIndex> {
-
         let results = self.create_transition(definition.duration);
 
         results
