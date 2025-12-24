@@ -1010,8 +1010,10 @@ impl AnimGraph {
                                     .sample_job
                                     .output()
                                     .unwrap()
-                                    .clone()
+                                    .clone();
+                                    // next_nodes.insert(to);
                             }
+
                             break;
                         }
                         _ => {
