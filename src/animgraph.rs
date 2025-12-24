@@ -674,10 +674,7 @@ impl AnimGraph {
             AnimNode::Start => {
                 return false;
             }
-            _ => {
-
-            }
-
+            _ => {}
         }
 
         if is_simple_edge {
@@ -848,10 +845,10 @@ impl AnimGraph {
 
         match start {
             AnimNode::Start => {
-                let outputs = self
+                for out in self
                     .graph
-                    .outputs(self.state_machine_nodes[state_machine_pool_idx].start);
-                for out in outputs {
+                    .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
+                {
                     self.state_machine_nodes[state_machine_pool_idx]
                         .trackers
                         .insert(out.1.to());
@@ -883,7 +880,7 @@ impl AnimGraph {
                     &mut next_nodes,
                 );
             }
-            println!("REMOVING VISITED NODES FROM TRACKERS");
+            println!("REMOVING VISITED NODES FROM TRACKERS. Count: {}", self.state_machine_nodes[state_machine_pool_idx].trackers.len());
             // Remove the visited nodes from the current trackers set
             self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
@@ -907,7 +904,7 @@ impl AnimGraph {
                 == 1;
 
             let mut end_node_reached = false;
-            
+
             if only_one_node_left {
                 println!("ONLY ONE NODE LEFT");
                 for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
@@ -917,7 +914,7 @@ impl AnimGraph {
                         .unwrap()
                         .weight();
                     match anim_node {
-                        AnimNode::End(_) => { end_node_reached = true},
+                        AnimNode::End(_) => end_node_reached = true,
                         _ => {}
                     }
                 }
@@ -991,15 +988,8 @@ impl AnimGraph {
                     next_nodes.insert(to);
                 }
             }
-            AnimNode::Start => {
-                for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
-                    .graph
-                    .outputs(anim_node_idx)
-                {
-                    let to = edge.to();
-                    next_nodes.insert(to);
-                }
-            }
+            // Start node is handled in evaluate_state_machine
+            AnimNode::Start => {}
         }
     }
 
