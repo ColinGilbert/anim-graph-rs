@@ -1003,7 +1003,7 @@ impl AnimGraph {
                                 .output()
                                 .unwrap()
                                 .clone();
-
+                            println!("FINAL OUTPUT = {}", final_output);
                             // self.sampler_nodes[*sampler_val].update(dt);
                             if final_output {
                                 // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
