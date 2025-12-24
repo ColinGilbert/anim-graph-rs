@@ -566,7 +566,9 @@ impl AnimGraph {
             }
 
             AnimGraphNode::Transition(_) => {
-                println!("Tried to create a sampler node as a child of a transition, which is invalid.");
+                println!(
+                    "Tried to create a sampler node as a child of a transition, which is invalid."
+                );
                 None
             }
         }
@@ -1012,7 +1014,6 @@ impl AnimGraph {
             } // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 println!("SAMPLER EVAL");
-                self.sampler_nodes[*sampler_val].update(dt);
 
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
@@ -1044,8 +1045,9 @@ impl AnimGraph {
                                         .unwrap()
                                         .clone(),
                                 );
+                                self.sampler_nodes[*sampler_val].update(dt);
                             }
-                            // break;
+                            break;
                         }
                         _ => {
                             next_nodes.insert(to);
