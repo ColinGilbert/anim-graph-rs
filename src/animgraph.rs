@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::rc::Rc;
-
 use mapgraph::map::slotmap::EdgeIndex;
 use ozz_animation_rs::*;
 
@@ -881,7 +880,7 @@ impl AnimGraph {
                 nodes_to_evaluate.push(*n);
             }
             for n in &nodes_to_evaluate {
-                //println!("EVALUATING ANIM NODE {:?}", n);
+                println!("EVALUATING ANIM NODE {:?}", n);
                 self.evaluate_anim_node(
                     state_machine_pool_idx,
                     state_machine_graph_idx,
