@@ -900,7 +900,7 @@ impl AnimGraph {
 
             // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
             for n in &next_nodes {
-                // println!("ADDING NEW NODES TO TRACKERS");
+                println!("ADDING NEW NODES TO TRACKERS");
                 self.state_machine_nodes[state_machine_pool_idx]
                     .trackers
                     .insert(*n);
