@@ -30,7 +30,7 @@ pub enum AnimGraphNode {
 // Note: In order to sync animations, they must be added to the node explicitly as part of its parameters.
 // This is because a sampler node that gets independently evaluated can't be synced with this node.
 pub struct BlendNode {
-    // The ozz blend job that does the heavy lifting 
+    // The ozz blend job that does the heavy lifting
     pub blend_job: BlendingJobRc,
     // These samplers are for animations that'll be synced together. Optional.
     pub samplers: Vec<SamplingJobRc>,
@@ -257,18 +257,15 @@ pub struct LocalToModelNode {
 
 impl LocalToModelNode {
     pub fn new(skeleton: Rc<Skeleton>) -> Self {
-        let mut o = Self {
-            l2m_job: LocalToModelJob::default(),
-            models: Rc::new(RefCell::new(vec![
-                glam::Mat4::default();
-                skeleton.num_joints()
-            ])),
-        };
+        let mut l2m_job = LocalToModelJobRc::default();
+        let models = Rc::new(RefCell::new(vec![
+            glam::Mat4::default();
+            skeleton.num_joints()
+        ]));
 
-        o.l2m_job.set_skeleton(skeleton.clone());
-        o.l2m_job.set_output(o.models.clone());
-
-        o
+        l2m_job.set_skeleton(skeleton.clone());
+        l2m_job.set_output(models.clone());
+        Self { l2m_job, models };
     }
 
     pub fn update(&mut self) {
@@ -311,7 +308,7 @@ impl SamplerNode {
             speed,
             looping: false,
             finished: false,
-            speed_param: None
+            speed_param: None,
         }
     }
 
@@ -345,7 +342,7 @@ pub struct StateMachineNode {
     pub end: NodeIndex,
     //pub active_node: NodeIndex,
     pub output: Rc<RefCell<Vec<SoaTransform>>>,
-    pub trackers:HashSet<NodeIndex>
+    pub trackers: HashSet<NodeIndex>,
 }
 
 impl StateMachineNode {
@@ -361,7 +358,7 @@ impl StateMachineNode {
             end: end_idx,
             //active_node: start_idx,
             output: Rc::new(RefCell::new(Vec::new())),
-            trackers
+            trackers,
         }
     }
 }
