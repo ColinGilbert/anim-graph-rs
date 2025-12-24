@@ -280,6 +280,7 @@ impl AnimGraph {
                     }
                     None => {
                         state_machine_finished_adding_nodes = true;
+                        println!("FINISHED ADDING ANIM NODES TO STATE MACHINE");
                     }
                 }
             }
@@ -320,6 +321,7 @@ impl AnimGraph {
                     }
                     None => {
                         state_machine_finished_adding_edges = true;
+                        println!("NO MORE ANIM NODES TO EVALUATE FOR STATE MACHINE")
                     }
                 }
             }
