@@ -986,13 +986,20 @@ impl AnimGraph {
             }
             AnimNode::End(val) => {
             } // Do nothing as this is the end
-            AnimNode::Sampler(val) => {
-                self.sampler_nodes[*val].update(dt);
+            AnimNode::Sampler(sampler_val) => {
+                self.sampler_nodes[*sampler_val].update(dt);
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
                     .outputs(anim_node_idx)
                 {
                     let to = edge.to();
+                    let next = self.state_machine_nodes[state_machine_pool_idx].graph.node(to).unwrap().weight();
+                    match next {
+                        AnimNode::End(end_val) => { 
+                            self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val].sample_job.output().unwrap().clone();
+                        }
+                        _ => {}
+                    }
                     next_nodes.insert(to);
                 }
             }
