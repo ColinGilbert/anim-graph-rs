@@ -675,7 +675,8 @@ impl AnimGraph {
             AnimNode::Start => {
                 return false;
             }
-            AnimNode::End(end_node_val) => match parent {
+            AnimNode::End(end_node_val) =>{
+                 match parent {
                 AnimNode::Blend(blend_node_val) => {
                     self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
                         .blend_job
@@ -690,7 +691,8 @@ impl AnimGraph {
                         .unwrap()
                         .clone()
                 }
-            },
+                _ => {}
+            }}
             _ => {}
         }
 
