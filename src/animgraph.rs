@@ -626,7 +626,7 @@ impl AnimGraph {
                 // Get output of parent node
                 match parent {
                     AnimNode::End(_) => {
-                        println("[AnimGraph] Tried using an end node as parent")
+                        println("[AnimGraph] Tried using an end node as parent");
                         return false;
                     }
                     AnimNode::Sampler(val) => {
