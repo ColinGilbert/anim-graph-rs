@@ -104,10 +104,6 @@ impl AnimGraph {
         }
         let root_state_machine_idx_define = definition.root.unwrap();
         // let root_state_machine_idx_runtime = results.root.unwrap();
-        // state_machine_defines_to_runtimes.insert(
-        //     root_state_machine_idx_define,
-        //     root_state_machine_idx_runtime,
-        // );
 
         // We clear these on each state machine iteration
         let mut anim_node_defines_to_runtimes = HashMap::<NodeIndex, NodeIndex>::new();
@@ -116,10 +112,12 @@ impl AnimGraph {
         // Iterate over state machines and transitions of the definition graph and add corresponding ones to the anim graph.
         let mut current_state_machine_idx_define = root_state_machine_idx_define;
         let root_node_runtime_idx = results.create_state_machine();
+
         state_machine_defines_to_runtimes
             .insert(current_state_machine_idx_define, root_node_runtime_idx);
         state_machine_runtimes_to_defines
             .insert(root_node_runtime_idx, current_state_machine_idx_define);
+
         let mut finished = false;
         let mut state_machines_to_evaluate = Vec::<NodeIndex>::new();
         let mut anim_nodes_to_evaluate = Vec::<NodeIndex>::new();
