@@ -874,6 +874,7 @@ impl AnimGraph {
                 nodes_to_evaluate.push(*n);
             }
             for n in &nodes_to_evaluate {
+                println!("EVALUATING ANIM NODE")
                 self.evaluate_anim_node(
                     state_machine_pool_idx,
                     state_machine_graph_idx,
@@ -916,7 +917,7 @@ impl AnimGraph {
                         _ => {}
                     }
                 }
-                if end_node_reached || self.state_machine_nodes[state_machine_pool_idx].trackers.len() == 0 {
+                if end_node_reached {
                     println!("FINISHED EVALUATING STATE MACHINE");
                     finished = true;
                 }
