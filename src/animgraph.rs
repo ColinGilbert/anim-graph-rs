@@ -897,46 +897,21 @@ impl AnimGraph {
 
             // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
             for n in &next_nodes {
-                println!("ADDING NEW NODES TO TRACKERS");
+               // println!("ADDING NEW NODES TO TRACKERS");
                 self.state_machine_nodes[state_machine_pool_idx]
                     .trackers
                     .insert(*n);
             }
             next_nodes.clear();
 
-            // Test to see if there is only a single tracker pointing to the end node.
-            // If so, flip the "finished" variable to true to end the show
-            let only_one_node_left = self.state_machine_nodes[state_machine_pool_idx]
-                .trackers
-                .len()
-                == 1;
-
-            let mut end_node_reached = false;
-
             if self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
                 .len()
                 == 0
             {
-                println!("ONLY ONE NODE LEFT");
                 finished = true;
             }
-            // for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
-            //     let anim_node = self.state_machine_nodes[state_machine_pool_idx]
-            //         .graph
-            //         .node(*n)
-            //         .unwrap()
-            //         .weight();
-            //     match anim_node {
-            //         AnimNode::End(_) => end_node_reached = true,
-            //         _ => {}
-            //     }
-            // }
-            // if end_node_reached {
-            //     println!("FINISHED EVALUATING STATE MACHINE");
-            //     finished = true;
-            // }
-            // }
+  
         }
     }
 
