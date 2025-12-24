@@ -218,7 +218,7 @@ impl AnimGraph {
                 .node(state_machine_runtime.unwrap())
                 .unwrap()
                 .weight();
-            let mut state_machine_pool_idx = 0;
+            let mut state_machine_pool_idx = 0; // Needs a valid usize value to compile
             match state_machine_node_runtime {
                 AnimGraphNode::StateMachine(val) => {
                     state_machine_pool_idx = *val;
@@ -359,8 +359,6 @@ impl AnimGraph {
 
             anim_node_defines_to_runtimes.clear();
             anim_node_runtimes_to_defines.clear();
-            //anim_edges_defines_to_runtimes.clear();
-            //anim_edges_runtimes_to_defines.clear();
 
             // Now now check to find out whether we should stop the loop.
             let last = state_machines_to_evaluate.last();
@@ -692,25 +690,7 @@ impl AnimGraph {
             AnimNode::Start => {
                 return false;
             }
-            AnimNode::End(_end_node_val) => {
-                // match parent {
-                //     AnimNode::Blend(blend_node_val) => {
-                //         self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
-                //             .blend_job
-                //             .output()
-                //             .unwrap()
-                //             .clone()
-                //     }
-                //     AnimNode::Sampler(sampler_node_val) => {
-                //         self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
-                //             .sample_job
-                //             .output()
-                //             .unwrap()
-                //             .clone()
-                //     }
-                //     _ => {}
-                // }
-            }
+            AnimNode::End(_end_node_val) => {}
             _ => {}
         }
 
@@ -729,7 +709,6 @@ impl AnimGraph {
         let node_results = self.graph.node(node_idx).unwrap().weight();
         match node_results {
             AnimGraphNode::StateMachine(val) => {
-                // println!("EVALUATE STATE MACHINE");
                 self.evaluate_state_machine(node_idx, *val, dt, true);
             }
             AnimGraphNode::Transition(val) => {
@@ -945,14 +924,6 @@ impl AnimGraph {
                 finished = true;
             }
         }
-
-        // if final_output {
-        //     self.output_node.set_input(
-        //         self.state_machine_nodes[state_machine_pool_idx]
-        //             .output
-        //             .clone(),
-        //     );
-        // }
     }
 
     // The two NodeIndex types refer to different graph instances
@@ -977,7 +948,6 @@ impl AnimGraph {
 
         match anim_node {
             AnimNode::Blend(val) => {
-                self.blend_nodes[*val].update(dt);
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
                     .outputs(anim_node_graph_idx)
@@ -985,6 +955,7 @@ impl AnimGraph {
                     let to = edge.to();
                     next_nodes.insert(to);
                 }
+                self.blend_nodes[*val].update(dt);
             }
             AnimNode::Condition(val) => {
                 if self.bools[*val] {
@@ -1008,10 +979,7 @@ impl AnimGraph {
                     }
                 }
             }
-            AnimNode::End(_val) => {
-                // self.state_machine_nodes[state_machine_pool_idx].output =
-                //     self.end_nodes[*val].output.clone();
-            } // Do nothing as this is the end
+            AnimNode::End(_val) => {} // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 println!("SAMPLER EVAL");
 
@@ -1029,15 +997,7 @@ impl AnimGraph {
                     match next {
                         AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
-                            // self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
-                            //     .sample_job
-                            //     .output()
-                            //     .unwrap()
-                            //     .clone();
-                            // self.sampler_nodes[*sampler_val].update(dt);
                             if final_output {
-                                // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
-                                //self.sampler_nodes[*sampler_val].update(dt);
                                 self.output_node.set_input(
                                     self.sampler_nodes[*sampler_val]
                                         .sample_job
@@ -1045,7 +1005,12 @@ impl AnimGraph {
                                         .unwrap()
                                         .clone(),
                                 );
-                                self.sampler_nodes[*sampler_val].update(dt);
+                            } else {
+                                self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
+                                    .sample_job
+                                    .output()
+                                    .unwrap()
+                                    .clone()
                             }
                             break;
                         }
@@ -1054,6 +1019,7 @@ impl AnimGraph {
                         }
                     }
                 }
+                self.sampler_nodes[*sampler_val].update(dt);
             }
             // Start node is handled in evaluate_state_machine
             AnimNode::Start => {
