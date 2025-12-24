@@ -99,7 +99,7 @@ impl AnimGraph {
         match definition.root {
             Some(_) => {}
             None => {
-                println!("[AnimGraph] Could not get root node definition.")
+                println!("[AnimGraph] Could not get root node definition.");
                 return None
             }
         }
