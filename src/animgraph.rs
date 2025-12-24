@@ -346,6 +346,7 @@ impl AnimGraph {
                 println!("FINISHING ANIM GRAPH CONSTRUCTION");
                 finished = true;
             }
+            println!("Running anim graph construction");
         }
 
         // Finally, setup the root node
