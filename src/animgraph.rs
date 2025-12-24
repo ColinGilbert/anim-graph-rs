@@ -341,6 +341,7 @@ impl AnimGraph {
             }
 
             if state_machines_to_evaluate.len() == 0 {
+                println!("FINISHING ANIM GRAPH CONSTRUCTION");
                 finished = true;
             }
         }
@@ -912,6 +913,7 @@ impl AnimGraph {
                     }
                 }
                 if end_node_reached {
+                    println!("FINISHED EVALUATING STATE MACHINE");
                     finished = true;
                 }
             }
