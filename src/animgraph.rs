@@ -116,12 +116,13 @@ impl AnimGraph {
         // Iterate over state machines and transitions of the definition graph and add corresponding ones to the anim graph.
         let mut current_state_machine_idx_define = root_state_machine_idx_define;
         let root_node_runtime_idx = results.create_state_machine();
-        state_machine_defines_to_runtimes.insert(current_state_machine_idx_define, root_node_runtime_idx);
-        state_machine_runtimes_to_defines.insert(root_node_runtime_idx, current_state_machine_idx_define);
+        state_machine_defines_to_runtimes
+            .insert(current_state_machine_idx_define, root_node_runtime_idx);
+        state_machine_runtimes_to_defines
+            .insert(root_node_runtime_idx, current_state_machine_idx_define);
         let mut finished = false;
         let mut state_machines_to_evaluate = Vec::<NodeIndex>::new();
         let mut anim_nodes_to_evaluate = Vec::<NodeIndex>::new();
-
 
         while !finished {
             let mut state_machine_runtime: Option<NodeIndex> = None;
@@ -205,10 +206,11 @@ impl AnimGraph {
 
             // Check to find out whether we have a node to use
             match state_machine_runtime {
-                Some (_) => {}
-                None => { break; }
+                Some(_) => {}
+                None => {
+                    break;
+                }
             }
-
 
             let state_machine_node = results
                 .graph
@@ -468,18 +470,28 @@ impl AnimGraph {
 
     fn create_state_machine(&mut self) -> NodeIndex {
         self.end_nodes.push(EndNode::new(self.skeleton.clone()));
-        let end_node_idx = self.end_nodes.len() - 1;
+        let end_node_pool_idx = self.end_nodes.len() - 1;
 
         self.state_machine_nodes
-            .push(StateMachineNode::new(end_node_idx));
-        let state_machine_idx = self.state_machine_nodes.len() - 1;
+            .push(StateMachineNode::new(end_node_pool_idx));
+        let state_machine_pool_idx = self.state_machine_nodes.len() - 1;
 
-        self.state_machine_nodes[state_machine_idx].output =
-            self.end_nodes[end_node_idx].output.clone();
+        self.state_machine_nodes[state_machine_pool_idx].output =
+            self.end_nodes[end_node_pool_idx].output.clone();
+
+        let start_node_graph_idx = self.state_machine_nodes[state_machine_pool_idx]
+            .graph
+            .add_node(AnimNode::Start);
+        let end_node_graph_idx = self.state_machine_nodes[state_machine_pool_idx]
+            .graph
+            .add_node(AnimNode::End(end_node_pool_idx));
+
+        self.state_machine_nodes[state_machine_pool_idx].start = start_node_graph_idx;
+        self.state_machine_nodes[state_machine_pool_idx].end = end_node_graph_idx;
 
         let result = self
             .graph
-            .add_node(AnimGraphNode::StateMachine(state_machine_idx));
+            .add_node(AnimGraphNode::StateMachine(state_machine_pool_idx));
         result
     }
 
