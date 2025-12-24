@@ -1006,14 +1006,14 @@ impl AnimGraph {
                         .weight();
                     match next {
                         AnimNode::End(end_val) => {
-                            if final_output {
-                                self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
-                            }
                             self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
                                 .sample_job
                                 .output()
                                 .unwrap()
                                 .clone();
+                            if final_output {
+                                self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
+                            }
                         }
                         _ => {}
                     }
