@@ -878,7 +878,7 @@ impl AnimGraph {
                 nodes_to_evaluate.push(*n);
             }
             for n in &nodes_to_evaluate {
-                println!("EVALUATING ANIM NODE {:?}", n);
+                //println!("EVALUATING ANIM NODE {:?}", n);
                 self.evaluate_anim_node(
                     state_machine_pool_idx,
                     state_machine_graph_idx,
@@ -932,6 +932,8 @@ impl AnimGraph {
             .unwrap()
             .weight();
 
+            println!("Evaluating anim node");
+
         match anim_node {
             AnimNode::Blend(val) => {
                 self.blend_nodes[*val].update(dt);
@@ -966,7 +968,6 @@ impl AnimGraph {
                 }
             }
             AnimNode::End(_) => {} // Do nothing as this is the end
-            //AnimNode::LocalToModel(_) => {} // This is currently left unused
             AnimNode::Sampler(val) => {
                 self.sampler_nodes[*val].update(dt);
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
