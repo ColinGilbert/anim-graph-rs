@@ -270,10 +270,6 @@ impl LocalToModelNode {
         Self { l2m_job, models }
     }
 
-    pub fn update(&mut self) {
-        self.l2m_job.run().unwrap();
-    }
-
     pub fn set_input(&mut self, locals: Rc<RefCell<Vec<SoaTransform>>>) {
         self.l2m_job.set_input(locals.clone());
 
