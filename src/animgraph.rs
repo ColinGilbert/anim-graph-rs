@@ -366,9 +366,16 @@ impl AnimGraph {
     }
 
     pub fn get_output(&mut self, output: &mut Vec<glam::Mat4>) {
-        self.output_node.l2m_job.run().unwrap();
-        for m in self.output_node.models.borrow().iter() {
-            output.push(*m);
+        let work = self.output_node.l2m_job.run();
+        match work {
+            Ok(()) => {
+                for m in self.output_node.models.borrow().iter() {
+                    output.push(*m);
+                }
+            }
+            Err(val) => {
+                println!("[AnimGraph] Couldn't run job, {}", val);
+            }
         }
     }
 
