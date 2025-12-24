@@ -1023,9 +1023,10 @@ impl AnimGraph {
                                 );
                             }
                         }
-                        _ => {}
+                        _ => {
+                            next_nodes.insert(to);
+                        }
                     }
-                    next_nodes.insert(to);
                 }
             }
             // Start node is handled in evaluate_state_machine
