@@ -1026,7 +1026,7 @@ impl AnimGraph {
                         .weight();
 
                     match next {
-                        AnimNode::End(_end_val) => {
+                        AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
                             // self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
                             //     .sample_job
@@ -1045,7 +1045,7 @@ impl AnimGraph {
                                         .clone(),
                                 );
                             }
-                            break;
+                            // break;
                         }
                         _ => {
                             next_nodes.insert(to);
