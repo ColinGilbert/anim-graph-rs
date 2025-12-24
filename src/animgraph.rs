@@ -985,6 +985,7 @@ impl AnimGraph {
                 }
             }
             AnimNode::End(val) => {
+                self.state_machine_nodes[state_machine_pool_idx].output = self.end_nodes[*val].output.clone();
             } // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 self.sampler_nodes[*sampler_val].update(dt);
