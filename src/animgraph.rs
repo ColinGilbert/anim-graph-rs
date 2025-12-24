@@ -900,7 +900,7 @@ impl AnimGraph {
 
             // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
             for n in &next_nodes {
-                println!("ADDING NEW NODES TO TRACKERS");
+                println!("ADDING NEW NODE TO TRACKERS");
                 self.state_machine_nodes[state_machine_pool_idx]
                     .trackers
                     .insert(*n);
@@ -996,6 +996,7 @@ impl AnimGraph {
                         .node(to)
                         .unwrap()
                         .weight();
+
                     match next {
                         AnimNode::End(end_val) => {
                             self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
@@ -1025,7 +1026,7 @@ impl AnimGraph {
                 }
             }
             // Start node is handled in evaluate_state_machine
-            AnimNode::Start => {}
+            AnimNode::Start => { println!("START NODE");}
         }
     }
 
