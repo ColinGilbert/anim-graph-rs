@@ -1,8 +1,8 @@
+use mapgraph::map::slotmap::EdgeIndex;
+use ozz_animation_rs::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::rc::Rc;
-use mapgraph::map::slotmap::EdgeIndex;
-use ozz_animation_rs::*;
 
 use crate::animgraph_definitions::AnimGraphDefinition;
 use crate::edges::*;
@@ -1026,7 +1026,21 @@ impl AnimGraph {
                 }
             }
             // Start node is handled in evaluate_state_machine
-            AnimNode::Start => { println!("START NODE");}
+            AnimNode::Start => {
+                for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
+                    .graph
+                    .outputs(anim_node_graph_idx)
+                {
+                    let to = edge.to();
+                    // let next = self.state_machine_nodes[state_machine_pool_idx]
+                    //     .graph
+                    //     .node(to)
+                    //     .unwrap()
+                    //     .weight();
+                    next_nodes.insert(to);
+                    println!("START NODE");
+                }
+            }
         }
     }
 
