@@ -125,7 +125,7 @@ impl AnimGraph {
                 definition.graph.outputs(current_state_machine_idx_define)
             {
                 //state_machine_runtime = None;
-                if !state_machine_defines_to_runtimes.contains_key(&edge_define.to()) {
+                if !state_machine_defines_to_runtimes.contains_key(&edge_define.from()) {
                     state_machine_runtime = Some(results.create_state_machine());
 
                     state_machine_runtimes_to_defines
