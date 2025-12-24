@@ -366,16 +366,13 @@ impl AnimGraph {
     }
 
     pub fn get_output(&mut self, output: &mut Vec<glam::Mat4>) {
-        let work = self.output_node.l2m_job.run();
-        match work {
-            Ok(()) => {
-                for m in self.output_node.models.borrow().iter() {
-                    output.push(*m);
-                }
-            }
-            Err(_val) => {
-                //println!("[AnimGraph] Couldn't run l2m job: {}", val);
-            }
+        self.output_node
+            .l2m_job
+            .run()
+            .expect("[AnimGraph] L2M Failed");
+
+        for m in self.output_node.models.borrow().iter() {
+            output.push(*m);
         }
     }
 
@@ -1006,7 +1003,7 @@ impl AnimGraph {
                                 .unwrap()
                                 .clone();
 
-                            self.sampler_nodes[*sampler_val].update(dt);
+                            // self.sampler_nodes[*sampler_val].update(dt);
                             if final_output {
                                 // self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
                                 self.output_node.l2m_job.set_input(
@@ -1018,7 +1015,7 @@ impl AnimGraph {
                                 );
                             }
 
-                            return;
+                            // return;
                         }
                         _ => {
                             next_nodes.insert(to);
