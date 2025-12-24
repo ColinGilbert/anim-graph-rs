@@ -674,24 +674,25 @@ impl AnimGraph {
             AnimNode::Start => {
                 return false;
             }
-            AnimNode::End(end_node_val) =>{
-                 match parent {
-                // AnimNode::Blend(blend_node_val) => {
-                //     self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
-                //         .blend_job
-                //         .output()
-                //         .unwrap()
-                //         .clone()
-                // }
-                // AnimNode::Sampler(sampler_node_val) => {
-                //     self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
-                //         .sample_job
-                //         .output()
-                //         .unwrap()
-                //         .clone()
-                // }
-                _ => {}
-            }}
+            AnimNode::End(end_node_val) => {
+                match parent {
+                    // AnimNode::Blend(blend_node_val) => {
+                    //     self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
+                    //         .blend_job
+                    //         .output()
+                    //         .unwrap()
+                    //         .clone()
+                    // }
+                    // AnimNode::Sampler(sampler_node_val) => {
+                    //     self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
+                    //         .sample_job
+                    //         .output()
+                    //         .unwrap()
+                    //         .clone()
+                    // }
+                    _ => {}
+                }
+            }
             _ => {}
         }
 
@@ -856,13 +857,6 @@ impl AnimGraph {
         dt: web_time::Duration,
         final_output: bool,
     ) {
-        if final_output {
-            self.output_node.l2m_job.set_input(
-                self.state_machine_nodes[state_machine_pool_idx]
-                    .output
-                    .clone(),
-            );
-        }
         let start = self.state_machine_nodes[state_machine_pool_idx]
             .graph
             .node(self.state_machine_nodes[state_machine_pool_idx].start)
@@ -930,6 +924,13 @@ impl AnimGraph {
                 finished = true;
             }
         }
+        if final_output {
+            self.output_node.l2m_job.set_input(
+                self.state_machine_nodes[state_machine_pool_idx]
+                    .output
+                    .clone(),
+            );
+        }
     }
 
     // The two NodeIndex types refer to different graph instances
@@ -985,7 +986,8 @@ impl AnimGraph {
                 }
             }
             AnimNode::End(val) => {
-                self.state_machine_nodes[state_machine_pool_idx].output = self.end_nodes[*val].output.clone();
+                self.state_machine_nodes[state_machine_pool_idx].output =
+                    self.end_nodes[*val].output.clone();
             } // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 self.sampler_nodes[*sampler_val].update(dt);
@@ -994,10 +996,18 @@ impl AnimGraph {
                     .outputs(anim_node_idx)
                 {
                     let to = edge.to();
-                    let next = self.state_machine_nodes[state_machine_pool_idx].graph.node(to).unwrap().weight();
+                    let next = self.state_machine_nodes[state_machine_pool_idx]
+                        .graph
+                        .node(to)
+                        .unwrap()
+                        .weight();
                     match next {
-                        AnimNode::End(end_val) => { 
-                            self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val].sample_job.output().unwrap().clone();
+                        AnimNode::End(end_val) => {
+                            self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
+                                .sample_job
+                                .output()
+                                .unwrap()
+                                .clone();
                         }
                         _ => {}
                     }
