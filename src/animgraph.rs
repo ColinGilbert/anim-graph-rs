@@ -905,24 +905,26 @@ impl AnimGraph {
 
             let mut end_node_reached = false;
 
-            if only_one_node_left || self.state_machine_nodes[state_machine_pool_idx].trackers.len() == 0 {
+            if self.state_machine_nodes[state_machine_pool_idx].trackers.len() == 0 {
                 println!("ONLY ONE NODE LEFT");
-                for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
-                    let anim_node = self.state_machine_nodes[state_machine_pool_idx]
-                        .graph
-                        .node(*n)
-                        .unwrap()
-                        .weight();
-                    match anim_node {
-                        AnimNode::End(_) => end_node_reached = true,
-                        _ => {}
-                    }
-                }
-                if end_node_reached {
-                    println!("FINISHED EVALUATING STATE MACHINE");
-                    finished = true;
-                }
+                                    finished = true;
             }
+                // for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
+                //     let anim_node = self.state_machine_nodes[state_machine_pool_idx]
+                //         .graph
+                //         .node(*n)
+                //         .unwrap()
+                //         .weight();
+                //     match anim_node {
+                //         AnimNode::End(_) => end_node_reached = true,
+                //         _ => {}
+                //     }
+                // }
+                // if end_node_reached {
+                //     println!("FINISHED EVALUATING STATE MACHINE");
+                //     finished = true;
+                // }
+            // }
         }
     }
 
