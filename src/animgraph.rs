@@ -874,7 +874,7 @@ impl AnimGraph {
                 nodes_to_evaluate.push(*n);
             }
             for n in &nodes_to_evaluate {
-                println!("EVALUATING ANIM NODE")
+                println!("EVALUATING ANIM NODE");
                 self.evaluate_anim_node(
                     state_machine_pool_idx,
                     state_machine_graph_idx,
