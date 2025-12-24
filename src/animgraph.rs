@@ -897,6 +897,7 @@ impl AnimGraph {
                     *n,
                     dt,
                     &mut next_nodes,
+                    final_output
                 );
             }
 
@@ -924,13 +925,14 @@ impl AnimGraph {
                 finished = true;
             }
         }
-        if final_output {
-            self.output_node.l2m_job.set_input(
-                self.state_machine_nodes[state_machine_pool_idx]
-                    .output
-                    .clone(),
-            );
-        }
+
+        // if final_output {
+        //     self.output_node.l2m_job.set_input(
+        //         self.state_machine_nodes[state_machine_pool_idx]
+        //             .output
+        //             .clone(),
+        //     );
+        // }
     }
 
     // The two NodeIndex types refer to different graph instances
@@ -942,6 +944,7 @@ impl AnimGraph {
         anim_node_idx: NodeIndex,
         dt: web_time::Duration,
         next_nodes: &mut HashSet<NodeIndex>,
+        final_output: bool,
     ) {
         // For each anim node type, update them accordingly
         let anim_node = self.state_machine_nodes[state_machine_pool_idx]
@@ -1003,6 +1006,9 @@ impl AnimGraph {
                         .weight();
                     match next {
                         AnimNode::End(end_val) => {
+                            if final_output {
+                                self.output_node.l2m_job.set_input(self.end_nodes[*end_val].output.clone());
+                            }
                             self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
                                 .sample_job
                                 .output()
