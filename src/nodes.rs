@@ -321,7 +321,7 @@ impl SamplerNode {
         if self.looping && !self.finished {
             self.seek %= duration;
         } else {
-            if !(self.seek < duration) {
+            if self.seek > duration {
                 self.seek = 0.0;
                 self.finished = true;
             }

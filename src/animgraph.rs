@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::btree_map::Values;
 use std::rc::Rc;
 
 use mapgraph::map::slotmap::EdgeIndex;
@@ -674,6 +675,22 @@ impl AnimGraph {
             AnimNode::Start => {
                 return false;
             }
+            AnimNode::End(end_node_val) => match parent {
+                AnimNode::Blend(blend_node_val) => {
+                    self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
+                        .blend_job
+                        .output()
+                        .unwrap()
+                        .clone()
+                }
+                AnimNode::Sampler(sampler_node_val) => {
+                    self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
+                        .sample_job
+                        .output()
+                        .unwrap()
+                        .clone()
+                }
+            },
             _ => {}
         }
 
@@ -897,7 +914,7 @@ impl AnimGraph {
 
             // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
             for n in &next_nodes {
-               // println!("ADDING NEW NODES TO TRACKERS");
+                // println!("ADDING NEW NODES TO TRACKERS");
                 self.state_machine_nodes[state_machine_pool_idx]
                     .trackers
                     .insert(*n);
@@ -911,7 +928,6 @@ impl AnimGraph {
             {
                 finished = true;
             }
-  
         }
     }
 
@@ -932,7 +948,7 @@ impl AnimGraph {
             .unwrap()
             .weight();
 
-            println!("Evaluating anim node {:?}", anim_node_idx);
+        // println!("Evaluating anim node {:?}", anim_node_idx);
 
         match anim_node {
             AnimNode::Blend(val) => {
