@@ -1025,8 +1025,8 @@ impl AnimGraph {
                     }
                 }
             }
-            // Start node is handled in evaluate_state_machine
             AnimNode::Start => {
+                println!("START NODE");
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
                     .outputs(anim_node_graph_idx)
@@ -1038,7 +1038,6 @@ impl AnimGraph {
                     //     .unwrap()
                     //     .weight();
                     next_nodes.insert(to);
-                    println!("START NODE");
                 }
             }
         }
