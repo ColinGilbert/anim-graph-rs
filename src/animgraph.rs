@@ -676,20 +676,20 @@ impl AnimGraph {
             }
             AnimNode::End(end_node_val) =>{
                  match parent {
-                AnimNode::Blend(blend_node_val) => {
-                    self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
-                        .blend_job
-                        .output()
-                        .unwrap()
-                        .clone()
-                }
-                AnimNode::Sampler(sampler_node_val) => {
-                    self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
-                        .sample_job
-                        .output()
-                        .unwrap()
-                        .clone()
-                }
+                // AnimNode::Blend(blend_node_val) => {
+                //     self.end_nodes[*end_node_val].output = self.blend_nodes[*blend_node_val]
+                //         .blend_job
+                //         .output()
+                //         .unwrap()
+                //         .clone()
+                // }
+                // AnimNode::Sampler(sampler_node_val) => {
+                //     self.end_nodes[*end_node_val].output = self.sampler_nodes[*sampler_node_val]
+                //         .sample_job
+                //         .output()
+                //         .unwrap()
+                //         .clone()
+                // }
                 _ => {}
             }}
             _ => {}
