@@ -627,6 +627,7 @@ impl AnimGraph {
             .node(child_idx)
             .unwrap()
             .weight();
+
         let mut is_simple_edge = true;
         match child {
             AnimNode::Blend(_) => {
@@ -673,7 +674,10 @@ impl AnimGraph {
             AnimNode::Start => {
                 return false;
             }
-            _ => {}
+            _ => {
+
+            }
+
         }
 
         if is_simple_edge {
@@ -864,7 +868,7 @@ impl AnimGraph {
         let mut next_nodes = HashSet::<NodeIndex>::new();
         while !finished {
             // For each node...
-            println!("EVALUATING STATE MACHINE");
+            //println!("EVALUATING STATE MACHINE");
             // Evaluate the current node and obtain the next set of nodes to track
             for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
                 nodes_to_evaluate.push(*n);
@@ -912,7 +916,7 @@ impl AnimGraph {
                         _ => {}
                     }
                 }
-                if end_node_reached {
+                if end_node_reached || nodes_to_evaluate == 0 {
                     println!("FINISHED EVALUATING STATE MACHINE");
                     finished = true;
                 }
