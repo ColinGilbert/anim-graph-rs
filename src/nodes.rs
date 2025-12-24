@@ -265,7 +265,8 @@ impl LocalToModelNode {
 
         l2m_job.set_skeleton(skeleton.clone());
         l2m_job.set_output(models.clone());
-        Self { l2m_job, models };
+        
+        Self { l2m_job, models }
     }
 
     pub fn update(&mut self) {
