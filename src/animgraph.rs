@@ -863,10 +863,8 @@ impl AnimGraph {
 
         let mut nodes_to_evaluate = Vec::<NodeIndex>::new();
         let mut next_nodes = HashSet::<NodeIndex>::new();
-        let mut print_debug = true;
         while !finished {
             // For each node...
-            //println!("EVALUATING STATE MACHINE");
             // Evaluate the current node and obtain the next set of nodes to track
             for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
                 nodes_to_evaluate.push(*n);
@@ -881,15 +879,8 @@ impl AnimGraph {
                     &mut next_nodes,
                 );
             }
-            if print_debug {
-                println!(
-                    "REMOVING VISITED NODES FROM TRACKERS. Count: {}",
-                    self.state_machine_nodes[state_machine_pool_idx]
-                        .trackers
-                        .len()
-                );
-                print_debug = false;
-            }
+
+            println!("[AnimGraph] Nodes to evaluate {:?}", nodes_to_evaluate);
             // Remove the visited nodes from the current trackers set
             self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
