@@ -228,6 +228,8 @@ impl AnimGraph {
                 }
             }
 
+            println!("ADDING ANIM NODES TO STATE MACHINE");
+
             // Now we add and connect the anim nodes
             let mut state_machine_finished_adding_nodes = false;
             let mut anim_node_definition_graph_idx = state_machine_definition.start;
@@ -284,6 +286,8 @@ impl AnimGraph {
                 }
             }
 
+            println!("ADDING EDGES BETWEEN ANIM NODES");
+            
             // We add the edges between the anim nodes.
             let mut state_machine_finished_adding_edges = false;
             let mut current_anim_node_definition = definition.root.unwrap(); // This is a temporary value that is guaranteed to change to a valid one. Did this so the compiler would let me do this without using an Option
