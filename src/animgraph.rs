@@ -117,7 +117,7 @@ impl AnimGraph {
             .insert(current_state_machine_idx_define, root_node_runtime_idx);
         state_machine_runtimes_to_defines
             .insert(root_node_runtime_idx, current_state_machine_idx_define);
-        
+
         let mut state_machine_runtime: Option<NodeIndex> = Some(root_node_runtime_idx);
         let mut finished = false;
         let mut state_machines_to_evaluate = Vec::<NodeIndex>::new();
@@ -239,32 +239,44 @@ impl AnimGraph {
                 println!("ITERATING OVER ANIM NODE DEFINITIONS");
                 let anim_node_definition = state_machine_definition
                     .graph
-                    .node(anim_node_definition_graph_idx);
+                    .node(anim_node_definition_graph_idx)
+                    .unwrap()
+                    .weight();
 
-                if !anim_node_defines_to_runtimes.contains_key(&anim_node_definition_graph_idx) {
-                    let anim_node_runtime_graph_idx = results.create_anim_node_from_definition(
-                        state_machine_runtime.unwrap(),
-                        // state_machine_pool_idx,
-                        anim_node_definition.unwrap().weight(),
-                        animations_by_name,
-                    );
+                match anim_node_definition {
+                    AnimNodeDefinition::Start => {}
+                    _ => {
+                        if !anim_node_defines_to_runtimes
+                            .contains_key(&anim_node_definition_graph_idx)
+                        {
+                            let anim_node_runtime_graph_idx = results
+                                .create_anim_node_from_definition(
+                                    state_machine_runtime.unwrap(),
+                                    // state_machine_pool_idx,
+                                    anim_node_definition.unwrap().weight(),
+                                    animations_by_name,
+                                );
 
-                    match anim_node_runtime_graph_idx {
-                        Some(_) => {}
-                        None => {
-                            println!("[AnimGraph] Could not add anim node from definition.");
-                            continue
+                            match anim_node_runtime_graph_idx {
+                                Some(_) => {}
+                                None => {
+                                    println!(
+                                        "[AnimGraph] Could not add anim node from definition."
+                                    );
+                                    return None;
+                                }
+                            }
+
+                            anim_node_defines_to_runtimes.insert(
+                                anim_node_definition_graph_idx,
+                                anim_node_runtime_graph_idx.unwrap(),
+                            );
+                            anim_node_runtimes_to_defines.insert(
+                                anim_node_runtime_graph_idx.unwrap(),
+                                anim_node_definition_graph_idx,
+                            );
                         }
                     }
-
-                    anim_node_defines_to_runtimes.insert(
-                        anim_node_definition_graph_idx,
-                        anim_node_runtime_graph_idx.unwrap(),
-                    );
-                    anim_node_runtimes_to_defines.insert(
-                        anim_node_runtime_graph_idx.unwrap(),
-                        anim_node_definition_graph_idx,
-                    );
                 }
 
                 // Now we check for more anim nodes to add via the edges.
