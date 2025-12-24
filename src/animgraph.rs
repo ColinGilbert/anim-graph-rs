@@ -236,11 +236,12 @@ impl AnimGraph {
             let mut state_machine_finished_adding_nodes = false;
             let mut anim_node_definition_graph_idx = state_machine_definition.start;
             while !state_machine_finished_adding_nodes {
+                println!("ITERATING OVER ANIM NODE DEFINITIONS");
                 let anim_node_definition = state_machine_definition
                     .graph
                     .node(anim_node_definition_graph_idx);
 
-                if anim_node_defines_to_runtimes.contains_key(&anim_node_definition_graph_idx) {
+                if !anim_node_defines_to_runtimes.contains_key(&anim_node_definition_graph_idx) {
                     let anim_node_runtime_graph_idx = results.create_anim_node_from_definition(
                         state_machine_runtime.unwrap(),
                         // state_machine_pool_idx,
