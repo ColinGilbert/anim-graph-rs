@@ -626,6 +626,7 @@ impl AnimGraph {
                 // Get output of parent node
                 match parent {
                     AnimNode::End(_) => {
+                        println("[AnimGraph] Tried using an end node as parent")
                         return false;
                     }
                     AnimNode::Sampler(val) => {
@@ -686,6 +687,7 @@ impl AnimGraph {
         }
 
         if is_simple_edge {
+            println!("ADDING EDGE FROM {:?} to {:?}", parent_idx, child_idx);
             let _ =
                 self.state_machine_nodes[i]
                     .graph
@@ -1025,6 +1027,7 @@ impl AnimGraph {
                     }
                 }
             }
+            // Start node is handled in evaluate_state_machine
             AnimNode::Start => {
                 println!("START NODE");
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
