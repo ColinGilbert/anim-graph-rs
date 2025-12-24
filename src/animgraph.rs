@@ -916,7 +916,7 @@ impl AnimGraph {
                         _ => {}
                     }
                 }
-                if end_node_reached || nodes_to_evaluate == 0 {
+                if end_node_reached || nodes_to_evaluate.len() == 0 {
                     println!("FINISHED EVALUATING STATE MACHINE");
                     finished = true;
                 }
