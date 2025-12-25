@@ -865,7 +865,7 @@ impl AnimGraph {
 
         match start {
             AnimNode::Start => {
-                println!("START NODE FOUND")
+                println!("START NODE FOUND");
                 for out in self
                     .graph
                     .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
