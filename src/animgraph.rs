@@ -738,7 +738,7 @@ impl AnimGraph {
         // Pipe the output of "from" and "to" state machines to our blend job, and evaluate them
         let froms = self.graph.inputs(transition_graph_idx);
         let mut evaluate = false;
-        let mut state_machine_pool_idx = 0;
+        let mut state_machine_pool_idx = 0; // It won't stay at this value
         let mut from = transition_graph_idx; // It won't stay at this value.
         for (i, edge) in froms.into_iter().enumerate() {
             if i > 0 {
@@ -990,6 +990,7 @@ impl AnimGraph {
             AnimNode::End(_val) => {} // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 println!("SAMPLER EVAL");
+                self.sampler_nodes[*sampler_val].update(dt);
 
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
@@ -1029,7 +1030,6 @@ impl AnimGraph {
                         }
                     }
                 }
-                self.sampler_nodes[*sampler_val].update(dt);
             }
             AnimNode::Start => {
                 println!("START NODE EVAL");
