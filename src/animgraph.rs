@@ -1017,7 +1017,7 @@ impl AnimGraph {
                             }
                             self.sampler_nodes[*sampler_val].update(dt);
 
-                            // break;
+                            break;
                         }
                         _ => {
                             next_nodes.insert(to);
