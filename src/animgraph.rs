@@ -1016,8 +1016,6 @@ impl AnimGraph {
                         AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
                             if final_output {
-                                self.output_node.l2m_job.clear_input();
-                                // self.output_node.l2m_job.clear_output();
                                 self.output_node.set_input(
                                     self.sampler_nodes[*sampler_val]
                                         .sample_job
