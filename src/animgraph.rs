@@ -1011,14 +1011,13 @@ impl AnimGraph {
                             if final_output {
                                 self.output_node
                                     .set_input(self.sampler_nodes[*sampler_val].sample_out.clone());
-                                self.sampler_nodes[*sampler_val].update(dt);
                             } else {
                                 self.end_nodes[*end_val].output =
                                     self.sampler_nodes[*sampler_val].sample_out.clone();
-                                self.sampler_nodes[*sampler_val].update(dt);
                             }
+                            self.sampler_nodes[*sampler_val].update(dt);
 
-                            break;
+                            // break;
                         }
                         _ => {
                             next_nodes.insert(to);
