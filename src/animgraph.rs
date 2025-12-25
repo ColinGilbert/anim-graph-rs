@@ -683,14 +683,16 @@ impl AnimGraph {
                             child_idx,
                         );
                     }
-                    _ => {}
+                    _ => {is_simple_edge = true}
                 }
                 // let layer_idx = self.blend_nodes[*val].set_input(input);
             }
             AnimNode::Start => {
                 return false;
             }
-            AnimNode::End(_end_node_val) => {}
+            AnimNode::End(_) => {
+                is_simple_edge = true;
+            }
             _ => {}
         }
 
@@ -873,7 +875,7 @@ impl AnimGraph {
                     .graph
                     .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
                 {
-                    self.state_machine_nodes[state_machine_pool_idx]
+                    let tracker_added = self.state_machine_nodes[state_machine_pool_idx]
                         .trackers
                         .insert(out.1.to());
                     println!("FOUND OUTGOING EDGE FOR START NODE: {:?}", out.1.to());
