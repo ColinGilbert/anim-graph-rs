@@ -1009,9 +1009,7 @@ impl AnimGraph {
                             if final_output {
                                 self.output_node.set_input(
                                     self.sampler_nodes[*sampler_val]
-                                        .sample_job
-                                        .output()
-                                        .unwrap()
+                                        .sample_out
                                         .clone(),
                                 );
                             } else {
@@ -1020,7 +1018,6 @@ impl AnimGraph {
                                     .output()
                                     .unwrap()
                                     .clone();
-                                // next_nodes.insert(to);
                             }
 
                             break;

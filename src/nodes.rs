@@ -279,6 +279,7 @@ impl LocalToModelNode {
 
 pub struct SamplerNode {
     pub sample_job: SamplingJobRc,
+    pub sample_out: Rc<RefCell<Vec<SoaTransform>>>, 
     pub seek: f32,
     pub speed: f32,
     pub looping: bool,
@@ -304,6 +305,7 @@ impl SamplerNode {
 
         Self {
             sample_job,
+            sample_out,
             seek: 0.0,
             speed,
             looping: false,
