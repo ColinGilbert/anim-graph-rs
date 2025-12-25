@@ -218,7 +218,7 @@ impl AnimGraph {
                 .node(state_machine_runtime.unwrap())
                 .unwrap()
                 .weight();
-            
+
             let state_machine_pool_idx: usize;
             match state_machine_node_runtime {
                 AnimGraphNode::StateMachine(val) => {
@@ -990,7 +990,6 @@ impl AnimGraph {
             AnimNode::End(_val) => {} // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 println!("SAMPLER EVAL");
-                self.sampler_nodes[*sampler_val].update(dt);
 
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
@@ -1007,17 +1006,11 @@ impl AnimGraph {
                         AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
                             if final_output {
-                                self.output_node.set_input(
-                                    self.sampler_nodes[*sampler_val]
-                                        .sample_out
-                                        .clone(),
-                                );
+                                self.output_node
+                                    .set_input(self.sampler_nodes[*sampler_val].sample_out.clone());
                             } else {
-                                self.end_nodes[*end_val].output = self.sampler_nodes[*sampler_val]
-                                    .sample_job
-                                    .output()
-                                    .unwrap()
-                                    .clone();
+                                self.end_nodes[*end_val].output =
+                                    self.sampler_nodes[*sampler_val].sample_out.clone();
                             }
 
                             break;
@@ -1027,6 +1020,7 @@ impl AnimGraph {
                         }
                     }
                 }
+                self.sampler_nodes[*sampler_val].update(dt);
             }
             AnimNode::Start => {
                 println!("START NODE EVAL");
