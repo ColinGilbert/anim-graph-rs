@@ -872,6 +872,9 @@ impl AnimGraph {
                 {
                     self.state_machine_nodes[state_machine_pool_idx]
                         .trackers
+                        .clear();
+                    self.state_machine_nodes[state_machine_pool_idx]
+                        .trackers
                         .insert(out.1.to());
                 }
             }
@@ -925,7 +928,7 @@ impl AnimGraph {
             //     .len()
             //     == 0
             // {
-           if next_nodes.len() == 0 {
+            if next_nodes.len() == 0 {
                 println!("FINISHED EVALUATING STATE MACHINE");
                 finished = true;
             }
@@ -1019,7 +1022,7 @@ impl AnimGraph {
                                     .output()
                                     .unwrap()
                                     .clone();
-                                    // next_nodes.insert(to);
+                                // next_nodes.insert(to);
                             }
 
                             break;
