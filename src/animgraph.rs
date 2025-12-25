@@ -394,12 +394,13 @@ impl AnimGraph {
     }
 
     pub fn get_output(&mut self, output: &mut Vec<glam::Mat4>) {
+        output.clear();
         self.output_node
             .l2m_job
             .run()
             .expect("[AnimGraph] L2M Failed");
 
-        for m in self.output_node.models.buf().unwrap().iter() {
+        for m in self.output_node.models.borrow().iter() {
             output.push(*m);
         }
     }
