@@ -1035,7 +1035,7 @@ impl AnimGraph {
                                 // next_nodes.insert(to);
                             }
 
-                            break;
+                            // break;
                         }
                         _ => {
                             next_nodes.insert(to);
