@@ -856,6 +856,7 @@ impl AnimGraph {
         dt: web_time::Duration,
         final_output: bool,
     ) {
+        println!("EVALUATE STATE MACHINE");
         let start = self.state_machine_nodes[state_machine_pool_idx]
             .graph
             .node(self.state_machine_nodes[state_machine_pool_idx].start)
