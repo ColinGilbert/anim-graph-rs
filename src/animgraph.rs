@@ -925,12 +925,12 @@ impl AnimGraph {
 
             // next_nodes.clear();
 
-            // if self.state_machine_nodes[state_machine_pool_idx]
-            //     .trackers
-            //     .len()
-            //     == 0
-            // {
-            if next_nodes.len() == 0 {
+            if self.state_machine_nodes[state_machine_pool_idx]
+                .trackers
+                .len()
+                == 0
+            {
+            // if next_nodes.len() == 0 {
                 println!("FINISHED EVALUATING STATE MACHINE");
                 finished = true;
             }
