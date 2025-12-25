@@ -672,11 +672,8 @@ impl AnimGraph {
                     }
                     AnimNode::Blend(val) => {
                         is_simple_edge = false;
-                        let parent_outputs = self.blend_nodes[*val]
-                            .blend_job
-                            .output()
-                            .unwrap()
-                            .clone();
+                        let parent_outputs =
+                            self.blend_nodes[*val].blend_job.output().unwrap().clone();
                         let layer = self.blend_nodes[*val].set_input(parent_outputs);
                         let _ = self.state_machine_nodes[i].graph.add_edge(
                             AnimEdge::Blend(layer),
@@ -888,7 +885,12 @@ impl AnimGraph {
         let mut nodes_to_evaluate = Vec::<NodeIndex>::new();
         let mut next_nodes = HashSet::<NodeIndex>::new();
         while !finished {
-            println!("NUM TRACKERS: {}", self.state_machine_nodes[state_machine_pool_idx].trackers.len());
+            println!(
+                "NUM TRACKERS: {}",
+                self.state_machine_nodes[state_machine_pool_idx]
+                    .trackers
+                    .len()
+            );
             // For each node...
             // Evaluate the current node and obtain the next set of nodes to track
             for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
@@ -932,7 +934,6 @@ impl AnimGraph {
                 println!("FINISHED EVALUATING STATE MACHINE");
                 finished = true;
             }
-
         }
     }
 
@@ -990,11 +991,11 @@ impl AnimGraph {
                 }
             }
             AnimNode::End(val) => {
-                            if final_output {
-                                self.output_node
-                                    .set_input(self.end_nodes[*val].output.clone());
-                            } 
-
+                println!("END NODE");
+                if final_output {
+                    self.output_node
+                        .set_input(self.end_nodes[*val].output.clone());
+                }
             }
             AnimNode::Sampler(sampler_val) => {
                 println!("SAMPLER EVAL");
@@ -1013,8 +1014,8 @@ impl AnimGraph {
                     match next {
                         AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
-                                self.end_nodes[*end_val].output =
-                                    self.sampler_nodes[*sampler_val].sample_out.clone();
+                            self.end_nodes[*end_val].output =
+                                self.sampler_nodes[*sampler_val].sample_out.clone();
 
                             break;
                         }
