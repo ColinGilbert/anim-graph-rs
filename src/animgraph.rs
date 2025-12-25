@@ -921,6 +921,8 @@ impl AnimGraph {
                     .trackers
                     .insert(*n);
             }
+            
+            next_nodes.clear();
 
             if self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
@@ -931,7 +933,6 @@ impl AnimGraph {
                 finished = true;
             }
 
-            next_nodes.clear();
         }
     }
 
