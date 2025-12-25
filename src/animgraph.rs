@@ -921,7 +921,7 @@ impl AnimGraph {
                     .trackers
                     .insert(*n);
             }
-            
+
             next_nodes.clear();
 
             if self.state_machine_nodes[state_machine_pool_idx]
@@ -989,7 +989,13 @@ impl AnimGraph {
                     }
                 }
             }
-            AnimNode::End(_val) => {} // Do nothing as this is the end
+            AnimNode::End(val) => {
+                            if final_output {
+                                self.output_node
+                                    .set_input(self.end_nodes[*val].output.clone());
+                            } 
+
+            }
             AnimNode::Sampler(sampler_val) => {
                 println!("SAMPLER EVAL");
 
@@ -1007,13 +1013,8 @@ impl AnimGraph {
                     match next {
                         AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
-                            if final_output {
-                                self.output_node
-                                    .set_input(self.sampler_nodes[*sampler_val].sample_out.clone());
-                            } else {
                                 self.end_nodes[*end_val].output =
                                     self.sampler_nodes[*sampler_val].sample_out.clone();
-                            }
 
                             break;
                         }
