@@ -672,8 +672,8 @@ impl AnimGraph {
                     }
                     AnimNode::Blend(val) => {
                         is_simple_edge = false;
-                        let parent_outputs = self.sampler_nodes[*val]
-                            .sample_job
+                        let parent_outputs = self.blend_nodes[*val]
+                            .blend_job
                             .output()
                             .unwrap()
                             .clone();
@@ -888,6 +888,7 @@ impl AnimGraph {
         let mut nodes_to_evaluate = Vec::<NodeIndex>::new();
         let mut next_nodes = HashSet::<NodeIndex>::new();
         while !finished {
+            println!("NUM TRACKERS: {}", self.state_machine_nodes[state_machine_pool_idx].trackers.len());
             // For each node...
             // Evaluate the current node and obtain the next set of nodes to track
             for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
