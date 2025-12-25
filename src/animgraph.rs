@@ -859,6 +859,7 @@ impl AnimGraph {
         final_output: bool,
     ) {
         println!("EVALUATE STATE MACHINE");
+        let start_idx = self.state_machine_nodes[state_machine_pool_idx].start;
         let start = self.state_machine_nodes[state_machine_pool_idx]
             .graph
             .node(self.state_machine_nodes[state_machine_pool_idx].start)
@@ -872,15 +873,19 @@ impl AnimGraph {
                     .trackers
                     .clear();
 
-                for (ei, edge) in self
-                    .graph
-                    .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
-                {
-                    self.state_machine_nodes[state_machine_pool_idx]
-                        .trackers
-                        .insert(edge.to());
-                    println!("FOUND OUTGOING EDGE FOR START NODE: {:?}", edge.to());
-                }
+                self.state_machine_nodes[state_machine_pool_idx]
+                    .trackers
+                    .insert(start_idx);
+
+                // for (ei, edge) in self
+                //     .graph
+                //     .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
+                // {
+                //     self.state_machine_nodes[state_machine_pool_idx]
+                //         .trackers
+                //         .insert(edge.to());
+                //     println!("FOUND OUTGOING EDGE FOR START NODE: {:?}", edge.to());
+                // }
             }
             _ => {
                 println!("[AnimGraph] Invalid start node type");
@@ -1047,7 +1052,7 @@ impl AnimGraph {
                 {
                     let to = edge.to();
                     next_nodes.insert(to);
-                    println!("NEXT NODE: {:?}", edge.to());
+                    //println!("NEXT NODE: {:?}", edge.to());
                 }
             }
         }
