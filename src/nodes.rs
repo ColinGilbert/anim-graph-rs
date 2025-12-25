@@ -298,7 +298,7 @@ impl SamplerNode {
 
         let sample_out = Rc::new(RefCell::new(vec![
             SoaTransform::default();
-            skeleton.num_joints()
+            skeleton.num_soa_joints()
         ]));
 
         sample_job.set_output(sample_out.clone());
