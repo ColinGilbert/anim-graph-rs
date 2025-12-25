@@ -876,16 +876,6 @@ impl AnimGraph {
                 self.state_machine_nodes[state_machine_pool_idx]
                     .trackers
                     .insert(start_idx);
-
-                // for (ei, edge) in self
-                //     .graph
-                //     .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
-                // {
-                //     self.state_machine_nodes[state_machine_pool_idx]
-                //         .trackers
-                //         .insert(edge.to());
-                //     println!("FOUND OUTGOING EDGE FOR START NODE: {:?}", edge.to());
-                // }
             }
             _ => {
                 println!("[AnimGraph] Invalid start node type");
@@ -915,7 +905,6 @@ impl AnimGraph {
                 );
             }
 
-            //println!("[AnimGraph] Nodes to evaluate {:?}", nodes_to_evaluate);
             // Remove the visited nodes from the current trackers set
             self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
@@ -1032,7 +1021,7 @@ impl AnimGraph {
                                 // next_nodes.insert(to);
                             }
 
-                            // break;
+                            break;
                         }
                         _ => {
                             next_nodes.insert(to);
