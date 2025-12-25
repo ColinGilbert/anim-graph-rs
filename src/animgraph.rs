@@ -683,7 +683,7 @@ impl AnimGraph {
                             child_idx,
                         );
                     }
-                    _ => {is_simple_edge = true}
+                    _ => is_simple_edge = true,
                 }
                 // let layer_idx = self.blend_nodes[*val].set_input(input);
             }
@@ -871,14 +871,15 @@ impl AnimGraph {
                 self.state_machine_nodes[state_machine_pool_idx]
                     .trackers
                     .clear();
-                for out in self
+
+                for (ei, edge) in self
                     .graph
                     .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
                 {
-                    let tracker_added = self.state_machine_nodes[state_machine_pool_idx]
+                    self.state_machine_nodes[state_machine_pool_idx]
                         .trackers
-                        .insert(out.1.to());
-                    println!("FOUND OUTGOING EDGE FOR START NODE: {:?}", out.1.to());
+                        .insert(edge.to());
+                    println!("FOUND OUTGOING EDGE FOR START NODE: {:?}", edge.to());
                 }
             }
             _ => {
@@ -932,7 +933,7 @@ impl AnimGraph {
                 .len()
                 == 0
             {
-            // if next_nodes.len() == 0 {
+                // if next_nodes.len() == 0 {
                 println!("FINISHED EVALUATING STATE MACHINE");
                 finished = true;
             }
