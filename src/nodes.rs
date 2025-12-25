@@ -272,8 +272,8 @@ impl LocalToModelNode {
         self.l2m_job.clear_input();
         self.l2m_job.set_input(locals.clone());
 
-        // let results = self.l2m_job.validate();
-        // println!("LOCAL TO MODEL NODE SET INPUT. VALID: {}", results);
+        let results = self.l2m_job.validate();
+        println!("LOCAL TO MODEL NODE SET INPUT. VALID: {}", results);
     }
 }
 
