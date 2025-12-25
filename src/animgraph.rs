@@ -990,13 +990,7 @@ impl AnimGraph {
                     }
                 }
             }
-            AnimNode::End(val) => {
-                println!("END NODE");
-                if final_output {
-                    self.output_node
-                        .set_input(self.end_nodes[*val].output.clone());
-                }
-            }
+            AnimNode::End(_val) => {} // Do nothing as this is the end
             AnimNode::Sampler(sampler_val) => {
                 println!("SAMPLER EVAL");
 
@@ -1014,17 +1008,24 @@ impl AnimGraph {
                     match next {
                         AnimNode::End(end_val) => {
                             println!("FINAL OUTPUT = {}", final_output);
-                            self.end_nodes[*end_val].output =
-                                self.sampler_nodes[*sampler_val].sample_out.clone();
+                            if final_output {
+                                self.output_node
+                                    .set_input(self.sampler_nodes[*sampler_val].sample_out.clone());
+                                self.sampler_nodes[*sampler_val].update(dt);
+                            } else {
+                                self.end_nodes[*end_val].output =
+                                    self.sampler_nodes[*sampler_val].sample_out.clone();
+                                self.sampler_nodes[*sampler_val].update(dt);
+                            }
 
                             break;
                         }
                         _ => {
                             next_nodes.insert(to);
+                            self.sampler_nodes[*sampler_val].update(dt);
                         }
                     }
                 }
-                self.sampler_nodes[*sampler_val].update(dt);
             }
             AnimNode::Start => {
                 println!("START NODE EVAL");
