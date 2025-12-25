@@ -261,7 +261,7 @@ impl LocalToModelNode {
         l2m_job.set_skeleton(skeleton.clone());
         let models = Rc::new(RefCell::new(vec![
             glam::Mat4::IDENTITY;
-            skeleton.num_soa_joints()
+            skeleton.num_joints()
             ]));
         l2m_job.set_output(models.clone());
 
@@ -298,7 +298,7 @@ impl SamplerNode {
 
         let sample_out = Rc::new(RefCell::new(vec![
             SoaTransform::default();
-            skeleton.num_soa_joints()
+            skeleton.num_joints()
         ]));
 
         sample_job.set_output(sample_out.clone());
