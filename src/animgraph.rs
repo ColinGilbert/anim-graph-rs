@@ -876,6 +876,7 @@ impl AnimGraph {
                     self.state_machine_nodes[state_machine_pool_idx]
                         .trackers
                         .insert(out.1.to());
+                    println!("FOUND OUTGOING EDGE FOR START NODE: {:?}", out.1.to());
                 }
             }
             _ => {
