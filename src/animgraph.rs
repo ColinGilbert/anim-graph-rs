@@ -888,6 +888,7 @@ impl AnimGraph {
             // For each node...
             // Evaluate the current node and obtain the next set of nodes to track
             for n in &self.state_machine_nodes[state_machine_pool_idx].trackers {
+                println!("PUSHING NODES FROM TRACKERS");
                 nodes_to_evaluate.push(*n);
             }
             for n in &nodes_to_evaluate {
