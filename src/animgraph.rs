@@ -400,7 +400,7 @@ impl AnimGraph {
             .run()
             .expect("[AnimGraph] L2M Failed");
 
-        for m in self.output_node.models.borrow().iter() {
+        for m in self.output_node.models.buf().unwrap().iter() {
             output.push(*m);
         }
     }
