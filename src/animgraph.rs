@@ -1052,7 +1052,7 @@ impl AnimGraph {
                 {
                     let to = edge.to();
                     next_nodes.insert(to);
-                    //println!("NEXT NODE: {:?}", edge.to());
+                    println!("NEXT NODE: {:?}", edge.to());
                 }
             }
         }
