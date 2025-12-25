@@ -218,7 +218,8 @@ impl AnimGraph {
                 .node(state_machine_runtime.unwrap())
                 .unwrap()
                 .weight();
-            let mut state_machine_pool_idx = 0; // Needs a valid usize value to compile
+            
+            let state_machine_pool_idx: usize;
             match state_machine_node_runtime {
                 AnimGraphNode::StateMachine(val) => {
                     state_machine_pool_idx = *val;
@@ -394,7 +395,6 @@ impl AnimGraph {
     }
 
     pub fn get_output(&mut self, output: &mut Vec<glam::Mat4>) {
-        output.clear();
         self.output_node
             .l2m_job
             .run()
