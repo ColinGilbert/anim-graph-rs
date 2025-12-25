@@ -866,20 +866,21 @@ impl AnimGraph {
         match start {
             AnimNode::Start => {
                 println!("START NODE FOUND");
+                self.state_machine_nodes[state_machine_pool_idx]
+                    .trackers
+                    .clear();
                 for out in self
                     .graph
                     .outputs(self.state_machine_nodes[state_machine_pool_idx].start)
                 {
                     self.state_machine_nodes[state_machine_pool_idx]
                         .trackers
-                        .clear();
-                    self.state_machine_nodes[state_machine_pool_idx]
-                        .trackers
                         .insert(out.1.to());
                 }
             }
             _ => {
-                println!("[AnimGraph] Invalid start node type")
+                println!("[AnimGraph] Invalid start node type");
+                return;
             }
         }
 
