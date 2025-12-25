@@ -905,6 +905,7 @@ impl AnimGraph {
             self.state_machine_nodes[state_machine_pool_idx]
                 .trackers
                 .clear();
+
             nodes_to_evaluate.clear();
 
             // Once the current trackers set is empty, add the next set of nodes to track to the current trackers set
@@ -914,6 +915,7 @@ impl AnimGraph {
                     .trackers
                     .insert(*n);
             }
+            
             next_nodes.clear();
 
             if self.state_machine_nodes[state_machine_pool_idx]
