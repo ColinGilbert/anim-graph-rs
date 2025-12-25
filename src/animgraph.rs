@@ -916,7 +916,7 @@ impl AnimGraph {
                     .insert(*n);
             }
 
-            next_nodes.clear();
+            // next_nodes.clear();
 
             // if self.state_machine_nodes[state_machine_pool_idx]
             //     .trackers
@@ -927,6 +927,8 @@ impl AnimGraph {
                 println!("FINISHED EVALUATING STATE MACHINE");
                 finished = true;
             }
+            
+            next_nodes.clear();
         }
     }
 
@@ -1028,7 +1030,7 @@ impl AnimGraph {
                 self.sampler_nodes[*sampler_val].update(dt);
             }
             AnimNode::Start => {
-                println!("START NODE");
+                println!("START NODE EVAL");
                 for (_, edge) in self.state_machine_nodes[state_machine_pool_idx]
                     .graph
                     .outputs(anim_node_graph_idx)
