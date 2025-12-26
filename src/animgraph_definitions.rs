@@ -34,6 +34,7 @@ impl AnimGraphDefinition {
         Self {
             graph,
             root: None,
+            
             bools: Vec::new(),
             floats: Vec::new(),
             uints: Vec::new(),

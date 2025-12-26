@@ -110,13 +110,13 @@ impl AnimGraph {
         let mut anim_node_runtimes_to_defines = HashMap::<NodeIndex, NodeIndex>::new();
 
         // Iterate over state machines and transitions of the definition graph and add corresponding ones to the anim graph.
-        let mut current_state_machine_idx_define = root_state_machine_idx_define;
+        let mut current_state_machine_definition_idx = root_state_machine_idx_define;
         let root_node_runtime_idx = results.create_state_machine();
 
         state_machine_defines_to_runtimes
-            .insert(current_state_machine_idx_define, root_node_runtime_idx);
+            .insert(current_state_machine_definition_idx, root_node_runtime_idx);
         state_machine_runtimes_to_defines
-            .insert(root_node_runtime_idx, current_state_machine_idx_define);
+            .insert(root_node_runtime_idx, current_state_machine_definition_idx);
 
         let mut state_machine_runtime: Option<NodeIndex> = Some(root_node_runtime_idx);
         let mut finished = false;
@@ -125,8 +125,9 @@ impl AnimGraph {
 
         while !finished {
             println!("ITERATING");
-            for (edge_idx, edge_define) in
-                definition.graph.outputs(current_state_machine_idx_define)
+            for (edge_idx, edge_define) in definition
+                .graph
+                .outputs(current_state_machine_definition_idx)
             {
                 println!("EDGE IDX {:?}", edge_idx);
                 //state_machine_runtime = None;
@@ -199,7 +200,7 @@ impl AnimGraph {
             // Now we do the anim nodes and connections of the state machine
             let state_machine_definition = definition
                 .graph
-                .node(current_state_machine_idx_define)
+                .node(current_state_machine_definition_idx)
                 .unwrap()
                 .weight();
 
@@ -333,7 +334,7 @@ impl AnimGraph {
                     .outputs(current_anim_node_definition)
                 {
                     results.connect_anim_nodes(
-                        state_machine_defines_to_runtimes[&current_state_machine_idx_define],
+                        state_machine_defines_to_runtimes[&current_state_machine_definition_idx],
                         *current_anim_node_results,
                         edge.to(),
                     );
@@ -366,7 +367,7 @@ impl AnimGraph {
 
             match last {
                 Some(val) => {
-                    current_state_machine_idx_define = *val;
+                    current_state_machine_definition_idx = *val;
                     state_machines_to_evaluate.pop();
                 }
                 None => {
@@ -686,6 +687,8 @@ impl AnimGraph {
                 // let layer_idx = self.blend_nodes[*val].set_input(input);
             }
             AnimNode::Start => {
+                println!("[AnimGraph] Tried using a start node as child., Invalid.");
+
                 return false;
             }
             AnimNode::End(_) => {

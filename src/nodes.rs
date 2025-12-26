@@ -270,7 +270,7 @@ impl LocalToModelNode {
 
     pub fn set_input(&mut self, locals: Rc<RefCell<Vec<SoaTransform>>>) {
         self.l2m_job.clear_input();
-        self.l2m_job.set_input(locals.clone());
+        self.l2m_job.set_input(locals);
 
         let results = self.l2m_job.validate();
         println!("LOCAL TO MODEL NODE SET INPUT. VALID: {}", results);
@@ -337,7 +337,7 @@ impl SamplerNode {
     }
 }
 
-// This is the most complex node type because it manages the current state, does callbacks, and assigns weights to blending jobs.
+// State machine nodes hold anim nodes and evaluate them all once per update..
 pub struct StateMachineNode {
     pub graph: SlotMapGraph<AnimNode, AnimEdge>,
     pub start: NodeIndex,
