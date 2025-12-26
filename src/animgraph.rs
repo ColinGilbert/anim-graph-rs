@@ -687,7 +687,7 @@ impl AnimGraph {
                 // let layer_idx = self.blend_nodes[*val].set_input(input);
             }
             AnimNode::Start => {
-                println!("[AnimGraph] Tried using a start node as child., Invalid.");
+                println!("[AnimGraph] Tried using a start node as child. Invalid.");
 
                 return false;
             }

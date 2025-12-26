@@ -271,6 +271,7 @@ impl LocalToModelNode {
     pub fn set_input(&mut self, locals: Rc<RefCell<Vec<SoaTransform>>>) {
         self.l2m_job.clear_input();
         self.l2m_job.set_input(locals);
+        self.l2m_job.set_output(self.models.clone());
 
         let results = self.l2m_job.validate();
         println!("LOCAL TO MODEL NODE SET INPUT. VALID: {}", results);
