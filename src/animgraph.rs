@@ -752,13 +752,19 @@ impl AnimGraph {
                 AnimGraphNode::StateMachine(val) => {
                     evaluate = true;
                     state_machine_pool_idx = *val;
-                    self.transition_nodes[transition_pool_idx]
+                    let end_node_raw = self.state_machine_nodes[state_machine_pool_idx].graph.node(self.state_machine_nodes[state_machine_pool_idx].end).unwrap().weight();
+                    match end_node_raw {
+                    AnimNode::End(val) => {
+                        let end_node = &self.end_nodes[*val];
+                        self.transition_nodes[transition_pool_idx]
                         .blend
                         .blend_job
-                        .layers_mut()[0]
-                        .transform = self.state_machine_nodes[state_machine_pool_idx]
-                        .output
+                        .layers_mut()[1]
+                        .transform = end_node.output
                         .clone();
+                    }
+                    _ => {println!("[AnimGraph] \"From\" state machine has an invalid end node type."); return; }
+                    }
                 }
                 AnimGraphNode::Transition(_) => {
                     println!("[AnimGraph] Warning: Transitions from transitions aren't supported.");
@@ -790,13 +796,19 @@ impl AnimGraph {
                 AnimGraphNode::StateMachine(val) => {
                     evaluate = true;
                     state_machine_pool_idx = *val;
-                    self.transition_nodes[transition_pool_idx]
+                    let end_node_raw = self.state_machine_nodes[state_machine_pool_idx].graph.node(self.state_machine_nodes[state_machine_pool_idx].end).unwrap().weight();
+                    match end_node_raw {
+                    AnimNode::End(val) => {
+                        let end_node = &self.end_nodes[*val];
+                        self.transition_nodes[transition_pool_idx]
                         .blend
                         .blend_job
                         .layers_mut()[1]
-                        .transform = self.state_machine_nodes[state_machine_pool_idx]
-                        .output
+                        .transform = end_node.output
                         .clone();
+                    }
+                    _ => {println!("[AnimGraph] \"To\" state machine has an invalid end node type."); return;}
+                    }
                 }
                 AnimGraphNode::Transition(_) => {
                     println!("[AnimGraph] Warning: Transitions to transitions aren't supported.");
