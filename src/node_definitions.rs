@@ -90,14 +90,15 @@ pub struct StateMachineNodeDefinition {
     pub graph: SlotMapGraph<AnimNodeDefinition, AnimEdgeDefinition>,
     pub start: NodeIndex,
     pub end: NodeIndex,
+    pub name: String,
 }
 
 impl StateMachineNodeDefinition {
-    pub fn new() -> Self {
+    pub fn new(name: String) -> Self {
         let mut graph = SlotMapGraph::<AnimNodeDefinition, AnimEdgeDefinition>::default();
         let start = graph.add_node(AnimNodeDefinition::Start);
         let end = graph.add_node(AnimNodeDefinition::End);
-        Self { graph, start, end }
+        Self { graph, start, end, name }
     }
 }
 

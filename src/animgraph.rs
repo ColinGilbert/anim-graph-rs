@@ -22,21 +22,26 @@ pub struct AnimGraph {
     // The following are the parameters this graph stores.
     bools: Vec<bool>,       // To control graph flow along with condition nodes
     floats: Vec<f32>,       // To manually control playback speed, blend layer weights, etc.
-    uints: Vec<usize>,      // Reserved
     ints: Vec<i64>,         // Reserved
-    vec3s: Vec<glam::Vec3>, // For use with IK nodes (coming soon!)
+    uints: Vec<usize>,      // Reserved
+    vec3s: Vec<glam::Vec3>, // Reserved, for use with IK nodes (coming soon!)
     // The following are for the client programmer to build a map of enums to parameters indices.
     bool_names: HashMap<String, usize>,
     float_names: HashMap<String, usize>,
-    uint_names: HashMap<String, usize>,
     int_names: HashMap<String, usize>,
+    uint_names: HashMap<String, usize>,
     vec3_names: HashMap<String, usize>,
-    // The following are used to store the heavyweight node types that can't be copied in-memory
-    sampler_nodes: Vec<SamplerNode>,
+    // The following are used to store the heavyweight node types that can't be copied
     blend_nodes: Vec<BlendNode>,
     end_nodes: Vec<EndNode>,
+    sampler_nodes: Vec<SamplerNode>,
     state_machine_nodes: Vec<StateMachineNode>,
     transition_nodes: Vec<TransitionNode>,
+    // additive_animations: Vec<AdditiveAnimNode>,
+    // active_additive_animations: HashSet<usize>,
+    // bone_sets_for_additive_animations: Vec<HashSet<usize>>
+    // This is to get the state machine node names
+    state_machine_node_names: HashMap<String, usize>,
 }
 
 impl AnimGraph {
@@ -64,6 +69,7 @@ impl AnimGraph {
             end_nodes: Vec::new(),
             state_machine_nodes: Vec::new(),
             transition_nodes: Vec::new(),
+            state_machine_node_names: HashMap::new(),
         }
     }
 
@@ -92,7 +98,6 @@ impl AnimGraph {
         let mut transition_defines_to_runtimes = HashMap::<EdgeIndex, NodeIndex>::new();
         let mut state_machine_runtimes_to_defines = HashMap::<NodeIndex, NodeIndex>::new();
         let mut transition_runtimes_to_defines = HashMap::<NodeIndex, EdgeIndex>::new();
-
         // We now extract the definitions graph and turn it into an animgraph...
 
         match definition.root {
@@ -224,6 +229,7 @@ impl AnimGraph {
             match state_machine_node_runtime {
                 AnimGraphNode::StateMachine(val) => {
                     state_machine_pool_idx = *val;
+                    results.state_machine_node_names.insert(state_machine_definition.name.clone(), *val);
                 }
                 AnimGraphNode::Transition(_) => {
                     // WTF?
